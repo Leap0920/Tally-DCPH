@@ -1,0 +1,451 @@
+/* Custom CSS Variables for Theme Support */
+:root {
+    --bs-body-bg: #ffffff;
+    --bs-body-color: #212529;
+    --custom-card-bg: #ffffff;
+    --custom-border-color: #dee2e6;
+    --navbar-bg: #ffffff;
+    --navbar-brand-color: #1e40af;
+    --nav-link-color: #6b7280;
+    --nav-link-hover-color: #1e40af;
+    --logo-border-color: rgba(30, 64, 175, 0.2);
+    --logo-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+[data-theme="dark"] {
+    --bs-body-bg: #1a1a1a;
+    --bs-body-color: #f8f9fa;
+    --custom-card-bg: #2d2d2d;
+    --custom-border-color: #495057;
+    --navbar-bg: #2d2d2d;
+    --navbar-brand-color: #3b82f6;
+    --nav-link-color: #d1d5db;
+    --nav-link-hover-color: #3b82f6;
+    --logo-border-color: rgba(59, 130, 246, 0.3);
+    --logo-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Apply theme variables */
+body {
+    background-color: var(--bs-body-bg) !important;
+    color: var(--bs-body-color) !important;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    padding-top: 76px; /* Account for fixed navbar */
+    font-family: 'Inter', sans-serif;
+}
+
+/* Navigation Header Styles */
+.tally-navbar {
+    background-color: var(--navbar-bg) !important;
+    border-bottom: 1px solid var(--custom-border-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Logo Image Styling */
+.brand-logo {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    object-fit: cover;
+    border: 2px solid var(--logo-border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand:hover .brand-logo {
+    transform: scale(1.15);
+    border-color: var(--navbar-brand-color);
+    box-shadow: var(--logo-shadow);
+}
+
+/* Logo-only version for very small screens */
+.brand-logo-only {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    object-fit: cover;
+    border: 2px solid var(--logo-border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand:hover .brand-logo-only {
+    transform: scale(1.15);
+    border-color: var(--navbar-brand-color);
+    box-shadow: var(--logo-shadow);
+}
+
+/* Enhanced navbar brand styling */
+.navbar-brand {
+    font-family: 'Crimson Text', serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: var(--navbar-brand-color) !important;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-brand:hover {
+    color: var(--nav-link-hover-color) !important;
+    background-color: rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+.brand-text {
+    font-weight: 700;
+    margin-left: 8px;
+}
+
+.nav-link {
+    color: var(--nav-link-color) !important;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    margin: 0 5px;
+    padding: 8px 16px !important;
+    position: relative;
+}
+
+.nav-link::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background-color: var(--nav-link-hover-color);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.nav-link:hover::before {
+    width: 80%;
+}
+
+.nav-link:hover {
+    color: var(--nav-link-hover-color) !important;
+    background-color: rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+.nav-link.active {
+    color: var(--nav-link-hover-color) !important;
+    background-color: rgba(59, 130, 246, 0.15);
+    font-weight: 600;
+}
+
+.nav-link.active::before {
+    width: 80%;
+}
+
+.page-title {
+    font-family: 'Crimson Text', serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--navbar-brand-color) !important;
+    display: flex;
+    align-items: center;
+}
+
+/* Theme Toggle in Navbar */
+.theme-toggle-nav {
+    background: transparent !important;
+    border: 2px solid var(--custom-border-color) !important;
+    border-radius: 50% !important;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: var(--navbar-brand-color) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-toggle-nav::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: var(--navbar-brand-color);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    transform: translate(-50%, -50%);
+    z-index: -1;
+}
+
+.theme-toggle-nav:hover::before {
+    width: 100%;
+    height: 100%;
+}
+
+.theme-toggle-nav:hover {
+    color: white !important;
+    transform: scale(1.1);
+    border-color: var(--navbar-brand-color) !important;
+}
+
+.lightbulb {
+    transition: all 0.3s ease;
+    font-size: 1.2rem;
+    z-index: 1;
+}
+
+/* Mobile navbar adjustments */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background-color: var(--navbar-bg);
+        border-radius: 8px;
+        margin-top: 10px;
+        padding: 15px;
+        border: 1px solid var(--custom-border-color);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .page-title {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        justify-content: center;
+    }
+    
+    .theme-toggle-nav {
+        margin-top: 10px;
+        width: 100%;
+        border-radius: 8px !important;
+        height: 40px;
+    }
+}
+
+/* Responsive logo adjustments */
+@media (max-width: 768px) {
+    body {
+        padding-top: 70px;
+    }
+    
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .brand-logo {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .brand-text {
+        font-size: 1.1rem;
+    }
+    
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .brand-logo {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .brand-text {
+        font-size: 1rem;
+    }
+}
+
+/* Logo-only version for very small screens */
+@media (max-width: 480px) {
+    .brand-text {
+        display: none !important;
+    }
+    
+    .brand-logo {
+        margin-right: 0 !important;
+    }
+}
+
+/* Dark theme navbar styling */
+[data-theme="dark"] .navbar-toggler {
+    border-color: var(--custom-border-color) !important;
+}
+
+[data-theme="dark"] .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+/* Dark theme card styling */
+[data-theme="dark"] .card {
+    background-color: var(--custom-card-bg) !important;
+    border-color: var(--custom-border-color) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .table {
+    --bs-table-bg: var(--custom-card-bg);
+    --bs-table-color: var(--bs-body-color);
+    --bs-table-border-color: var(--custom-border-color);
+}
+
+[data-theme="dark"] .form-control {
+    background-color: var(--custom-card-bg) !important;
+    border-color: var(--custom-border-color) !important;
+    color: var(--bs-body-color) !important;
+}
+
+[data-theme="dark"] .form-control:focus {
+    background-color: var(--custom-card-bg) !important;
+    border-color: #86b7fe !important;
+    color: var(--bs-body-color) !important;
+    box-shadow: 0 0 0 0.25rem rgba(134, 183, 254, 0.25);
+}
+
+/* Custom participant button styling */
+.participant-btn {
+    transition: all 0.3s ease;
+    border: 1px solid var(--custom-border-color) !important;
+    background-color: var(--custom-card-bg) !important;
+    color: var(--bs-body-color) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.participant-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.participant-btn:hover::before {
+    left: 100%;
+}
+
+.participant-btn:hover {
+    transform: translateX(5px);
+    background-color: var(--navbar-brand-color) !important;
+    color: white !important;
+    border-color: var(--navbar-brand-color) !important;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+/* Enhanced rank badges */
+.rank-badge {
+    font-weight: bold;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: all 0.3s ease;
+}
+
+.rank-1 { 
+    background: linear-gradient(135deg, #ffd700, #ffed4a);
+    color: #000;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+}
+
+.rank-2 { 
+    background: linear-gradient(135deg, #c0c0c0, #e2e8f0);
+    color: #000;
+    box-shadow: 0 2px 8px rgba(192, 192, 192, 0.4);
+}
+
+.rank-3 { 
+    background: linear-gradient(135deg, #cd7f32, #d69e2e);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(205, 127, 50, 0.4);
+}
+
+/* Card enhancements */
+.card {
+    transition: all 0.3s ease;
+    border: 1px solid var(--custom-border-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Button enhancements */
+.btn {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Animation for score updates */
+@keyframes scoreUpdate {
+    0% { 
+        background-color: #d4edda;
+        transform: scale(1.02);
+    }
+    100% { 
+        background-color: transparent;
+        transform: scale(1);
+    }
+}
+
+.score-updated {
+    animation: scoreUpdate 1s ease-out;
+}
+
+/* Loading animation */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Smooth transitions */
+* {
+    transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Focus states for accessibility */
+.btn:focus,
+.form-control:focus,
+.navbar-brand:focus,
+.nav-link:focus {
+    outline: 2px solid var(--navbar-brand-color);
+    outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+    .navbar,
+    .theme-toggle-nav,
+    .btn {
+        display: none !important;
+    }
+    
+    body {
+        padding-top: 0 !important;
+    }
+}
