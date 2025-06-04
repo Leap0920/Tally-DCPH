@@ -20,11 +20,139 @@ function toggleTheme() {
     }
 }
 
+// Scoring Configuration
+let scoringConfig = {
+    firstQuestion: {
+        autoPoints: true,
+        pointValue: 4
+    },
+    middleQuestions: {
+        firstPlace: 4,
+        secondPlace: 2,
+        thirdPlace: 2,
+        otherPlace: 1
+    },
+    lastQuestion: {
+        autoPoints: false,
+        pointValue: 4
+    },
+    totalQuestions: 10,
+    formats: {
+        nextFormat: "♪⁠┌⁠|⁠∵⁠|⁠┘⁠♪ＮＥＸＴ└⁠|⁠∵⁠|⁠┐⁠♪",
+        endFormat: "♪⁠┌⁠|⁠∵⁠|⁠┘⁠♪ＥＮＤ└⁠|⁠∵⁠|⁠┐⁠♪"
+    }
+};
+
 // Score History Tracking
 let scoreHistory = [];
 let participants = {};
 let currentEntries = [];
 let questionNumber = 1;
+
+// Settings Management
+function saveSettings() {
+    scoringConfig.firstQuestion.autoPoints = document.getElementById('firstQuestionAuto').checked;
+    scoringConfig.firstQuestion.pointValue = parseInt(document.getElementById('firstQuestionPoints').value);
+    
+    scoringConfig.middleQuestions.firstPlace = parseInt(document.getElementById('firstPlace').value);
+    scoringConfig.middleQuestions.secondPlace = parseInt(document.getElementById('secondPlace').value);
+    scoringConfig.middleQuestions.thirdPlace = parseInt(document.getElementById('thirdPlace').value);
+    scoringConfig.middleQuestions.otherPlace = parseInt(document.getElementById('otherPlace').value);
+    
+    scoringConfig.lastQuestion.autoPoints = document.getElementById('lastQuestionAuto').checked;
+    scoringConfig.lastQuestion.pointValue = parseInt(document.getElementById('lastQuestionPoints').value);
+    
+    scoringConfig.totalQuestions = parseInt(document.getElementById('totalQuestions').value);
+    
+    // Save format settings
+    scoringConfig.formats.nextFormat = document.getElementById('nextFormat').value;
+    scoringConfig.formats.endFormat = document.getElementById('endFormat').value;
+    
+    // Save to localStorage
+    localStorage.setItem('scoringConfig', JSON.stringify(scoringConfig));
+    
+    updateScoringPreview();
+    updateQuestionNumber(); // Update question display immediately
+    showToast('Settings saved successfully!', 'success');
+}
+
+function loadSettings() {
+    const saved = localStorage.getItem('scoringConfig');
+    if (saved) {
+        scoringConfig = JSON.parse(saved);
+        
+        // Ensure formats exist for backward compatibility
+        if (!scoringConfig.formats) {
+            scoringConfig.formats = {
+                nextFormat: "♪⁠┌⁠|⁠∵⁠|⁠┘⁠♪ＮＥＸＴ└⁠|⁠∵⁠|⁠┐⁠♪",
+                endFormat: "♪⁠┌⁠|⁠∵⁠|⁠┘⁠♪ＥＮＤ└⁠|⁠∵⁠|⁠┐⁠♪"
+            };
+        }
+    }
+    
+    // Update form fields
+    document.getElementById('firstQuestionAuto').checked = scoringConfig.firstQuestion.autoPoints;
+    document.getElementById('firstQuestionPoints').value = scoringConfig.firstQuestion.pointValue;
+    
+    document.getElementById('firstPlace').value = scoringConfig.middleQuestions.firstPlace;
+    document.getElementById('secondPlace').value = scoringConfig.middleQuestions.secondPlace;
+    document.getElementById('thirdPlace').value = scoringConfig.middleQuestions.thirdPlace;
+    document.getElementById('otherPlace').value = scoringConfig.middleQuestions.otherPlace;
+    
+    document.getElementById('lastQuestionAuto').checked = scoringConfig.lastQuestion.autoPoints;
+    document.getElementById('lastQuestionPoints').value = scoringConfig.lastQuestion.pointValue;
+    
+    document.getElementById('totalQuestions').value = scoringConfig.totalQuestions;
+    
+    // Load format settings
+    if (document.getElementById('nextFormat')) {
+        document.getElementById('nextFormat').value = scoringConfig.formats.nextFormat;
+    }
+    if (document.getElementById('endFormat')) {
+        document.getElementById('endFormat').value = scoringConfig.formats.endFormat;
+    }
+    
+    updateScoringPreview();
+}
+
+function updateScoringPreview() {
+    const previewFirst = document.getElementById('previewFirst');
+    const previewMiddle = document.getElementById('previewMiddle');
+    const previewLast = document.getElementById('previewLast');
+    
+    if (previewFirst) {
+        if (scoringConfig.firstQuestion.autoPoints) {
+            previewFirst.textContent = `${scoringConfig.firstQuestion.pointValue} points (all participants)`;
+        } else {
+            previewFirst.textContent = `Normal scoring`;
+        }
+    }
+    
+    if (previewMiddle) {
+        const { firstPlace, secondPlace, thirdPlace, otherPlace } = scoringConfig.middleQuestions;
+        previewMiddle.textContent = `${firstPlace}-${secondPlace}-${thirdPlace}-${otherPlace} points`;
+    }
+    
+    if (previewLast) {
+        if (scoringConfig.lastQuestion.autoPoints) {
+            previewLast.textContent = `${scoringConfig.lastQuestion.pointValue} points (all participants)`;
+        } else {
+            previewLast.textContent = `Normal scoring`;
+        }
+    }
+}
+
+// Question Number Management
+function updateQuestionNumber() {
+    const display = document.getElementById('questionNumberDisplay');
+    if (display) {
+        if (scoringConfig.totalQuestions > 0) {
+            display.textContent = `${questionNumber} of ${scoringConfig.totalQuestions}`;
+        } else {
+            display.textContent = questionNumber;
+        }
+    }
+}
 
 // Participant Management
 function addParticipant() {
@@ -55,7 +183,7 @@ function createParticipantButton(name) {
     document.getElementById('participantList').appendChild(btn);
 }
 
-// Scoring Logic
+// Enhanced Scoring Logic with Custom Settings
 function addToRound(name) {
     if (currentEntries.includes(name)) {
         showToast('This participant already answered this question!', 'warning');
@@ -83,15 +211,58 @@ function addToRound(name) {
 }
 
 function calculatePoints(position, questionNum) {
-    // For question 1, everyone gets 4 points
-    if (questionNum === 1) {
-        return 4;
+    const isFirstQuestion = questionNum === 1;
+    const isLastQuestion = scoringConfig.totalQuestions > 0 && questionNum === scoringConfig.totalQuestions;
+    
+    // First question logic
+    if (isFirstQuestion && scoringConfig.firstQuestion.autoPoints) {
+        return scoringConfig.firstQuestion.pointValue;
     }
     
-    // For question 2 onwards, use 4-2-2-1 scoring
-    if (position === 0) return 4;  // First answer gets 4 points
-    if (position <= 2) return 2;   // Second and third answers get 2 points
-    return 1;                      // All other answers get 1 point
+    // Last question logic
+    if (isLastQuestion && scoringConfig.lastQuestion.autoPoints) {
+        return scoringConfig.lastQuestion.pointValue;
+    }
+    
+    // Middle questions or non-auto first/last questions
+    const { firstPlace, secondPlace, thirdPlace, otherPlace } = scoringConfig.middleQuestions;
+    
+    if (position === 0) return firstPlace;
+    if (position === 1) return secondPlace;
+    if (position === 2) return thirdPlace;
+    return otherPlace;
+}
+
+// Auto-assign points for special questions
+function autoAssignPoints() {
+    const isFirstQuestion = questionNumber === 1;
+    const isLastQuestion = scoringConfig.totalQuestions > 0 && questionNumber === scoringConfig.totalQuestions;
+    
+    if ((isFirstQuestion && scoringConfig.firstQuestion.autoPoints) || 
+        (isLastQuestion && scoringConfig.lastQuestion.autoPoints)) {
+        
+        const pointValue = isFirstQuestion ? 
+            scoringConfig.firstQuestion.pointValue : 
+            scoringConfig.lastQuestion.pointValue;
+            
+        Object.keys(participants).forEach(name => {
+            if (!currentEntries.includes(name)) {
+                scoreHistory.push({
+                    name: name,
+                    points: pointValue,
+                    previousTotal: participants[name].total,
+                    questionNumber: questionNumber
+                });
+                
+                participants[name].scores.push(pointValue);
+                participants[name].total += pointValue;
+                currentEntries.push(name);
+            }
+        });
+        
+        updateTable();
+        showToast(`Auto-assigned ${pointValue} points to all participants!`, 'success');
+    }
 }
 
 // Undo Functionality
@@ -117,15 +288,26 @@ function undoDelete() {
     }
 }
 
-// Round Management
+// Enhanced Round Management
 function nextQuestion() {
+    // Auto-assign points if needed before moving to next question
+    autoAssignPoints();
+    
     currentEntries = [];
     questionNumber++;
+    
+    // Update question number display
+    updateQuestionNumber();
     
     // Only clear the answer field, keep the topic
     document.getElementById('answerInput').value = '';
     
-    showToast(`Now recording responses for Question ${questionNumber}`, 'info');
+    // Check if this is beyond the set total questions
+    if (scoringConfig.totalQuestions > 0 && questionNumber > scoringConfig.totalQuestions) {
+        showToast(`Quiz completed! Total questions: ${scoringConfig.totalQuestions}`, 'success');
+    } else {
+        showToast(`Now recording responses for Question ${questionNumber}`, 'info');
+    }
 }
 
 // UI Updates
@@ -221,7 +403,8 @@ function showToast(message, type = 'info') {
     });
 }
 
-// Clipboard Function with Custom Format
+// Enhanced Clipboard Function with Custom Format
+// Enhanced Clipboard Function with Custom Format and Total Scores
 function copyRecords() {
     const topic = document.getElementById('topicInput')?.value.trim() || "Quiz Topic";
     const answer = document.getElementById('answerInput')?.value.trim() || "Quiz Answer";
@@ -235,15 +418,37 @@ function copyRecords() {
         })
         .join('\n');
 
+    // Determine if this is the last question
+    const isLastQuestion = scoringConfig.totalQuestions > 0 && questionNumber >= scoringConfig.totalQuestions;
+    const formatText = isLastQuestion ? scoringConfig.formats.endFormat : scoringConfig.formats.nextFormat;
+
+    // Add total scores section if it's the last question
+    let totalScoresSection = '';
+    if (isLastQuestion) {
+        const sortedParticipants = Object.entries(participants)
+            .sort((a, b) => b[1].total - a[1].total);
+        
+        totalScoresSection = `\n\nFinal Scores:\n${sortedParticipants.map(([name, data], index) => {
+            const rank = index + 1;
+            let rankEmoji = '';
+            if (rank === 1) rankEmoji = '🥇';
+            else if (rank === 2) rankEmoji = '🥈';
+            else if (rank === 3) rankEmoji = '🥉';
+            else rankEmoji = `${rank}.`;
+            
+            return `${rankEmoji} ${name}: ${data.total} points`;
+        }).join('\n')}`;
+    }
+
     // Create the formatted output
     const formattedOutput = `🏐${topic}🟠
 Answer: ${answer}
 
 Tally: 
 
-${participantRecords}
+${participantRecords}${totalScoresSection}
 
-♪⁠┌⁠|⁠∵⁠|⁠┘⁠♪ＮＥＸＴ└⁠|⁠∵⁠|⁠┐⁠♪`;
+${formatText}`;
 
     navigator.clipboard.writeText(formattedOutput)
         .then(() => {
@@ -255,6 +460,7 @@ ${participantRecords}
             showToast('Failed to copy records', 'danger');
         });
 }
+
 
 // Delete Participant Function
 function deleteParticipant() {
@@ -277,6 +483,25 @@ function deleteParticipant() {
     }
 }
 
+// Settings Modal Event Listeners
+function initializeSettingsListeners() {
+    // Add event listeners for real-time preview updates
+    const settingsInputs = [
+        'firstQuestionAuto', 'firstQuestionPoints',
+        'firstPlace', 'secondPlace', 'thirdPlace', 'otherPlace',
+        'lastQuestionAuto', 'lastQuestionPoints', 'totalQuestions',
+        'nextFormat', 'endFormat'
+    ];
+    
+    settingsInputs.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('change', updateScoringPreview);
+            element.addEventListener('input', updateScoringPreview);
+        }
+    });
+}
+
 // Navigation and Theme Initialization
 document.addEventListener('DOMContentLoaded', () => {
     // Load saved theme - Fixed to use documentElement
@@ -291,6 +516,15 @@ document.addEventListener('DOMContentLoaded', () => {
             lightbulb.classList.add('bi-moon');
         }
     }
+
+    // Load scoring settings
+    loadSettings();
+    
+    // Initialize settings event listeners
+    initializeSettingsListeners();
+    
+    // Update question number display
+    updateQuestionNumber();
 
     // Add Enter key support for participant input
     const participantInput = document.getElementById('participantInput');

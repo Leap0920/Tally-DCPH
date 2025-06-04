@@ -47,6 +47,11 @@
                     <i class="bi bi-trophy me-2"></i>Scoring System
                 </span>
                 
+                <!-- Settings Button -->
+                <button class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#settingsModal" title="Scoring Settings">
+                    <i class="bi bi-gear"></i>
+                </button>
+                
                 <!-- Theme Toggle Button -->
                 <button class="btn theme-toggle-nav" onclick="toggleTheme()" title="Toggle Theme">
                     <i class="bi bi-lightbulb lightbulb"></i>
@@ -56,6 +61,16 @@
     </nav>
 
     <div class="container-fluid px-4 py-3">
+        <!-- Question Number Display -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="alert alert-info d-flex align-items-center">
+                    <i class="bi bi-question-circle-fill me-2"></i>
+                    <strong>Question <span id="questionNumberDisplay">1</span></strong>
+                </div>
+            </div>
+        </div>
+
         <!-- Control Panel -->
         <div class="row mb-4">
             <div class="col-12">
@@ -147,6 +162,159 @@
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalLabel">
+                        <i class="bi bi-gear me-2"></i>Scoring Settings
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-4">
+                        <!-- First Question Settings -->
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="bi bi-1-circle me-2"></i>First Question</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="firstQuestionAuto" checked>
+                                        <label class="form-check-label" for="firstQuestionAuto">
+                                            Auto-assign points to all participants
+                                        </label>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="firstQuestionPoints" class="form-label">Points Value</label>
+                                            <input type="number" class="form-control" id="firstQuestionPoints" value="4" min="1" max="10">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Middle Questions Settings -->
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="bi bi-2-circle me-2"></i>Middle Questions (2nd to 2nd-to-last)</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-3">
+                                            <label for="firstPlace" class="form-label">1st Place</label>
+                                            <input type="number" class="form-control" id="firstPlace" value="4" min="1" max="10">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="secondPlace" class="form-label">2nd Place</label>
+                                            <input type="number" class="form-control" id="secondPlace" value="2" min="1" max="10">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="thirdPlace" class="form-label">3rd Place</label>
+                                            <input type="number" class="form-control" id="thirdPlace" value="2" min="1" max="10">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="otherPlace" class="form-label">Others</label>
+                                            <input type="number" class="form-control" id="otherPlace" value="1" min="1" max="10">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Last Question Settings -->
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="bi bi-star me-2"></i>Last Question</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="lastQuestionAuto">
+                                        <label class="form-check-label" for="lastQuestionAuto">
+                                            Auto-assign points to all participants
+                                        </label>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="lastQuestionPoints" class="form-label">Points Value</label>
+                                            <input type="number" class="form-control" id="lastQuestionPoints" value="4" min="1" max="10">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Total Questions Setting -->
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="bi bi-list-ol me-2"></i>Quiz Configuration</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="totalQuestions" class="form-label">Total Number of Questions</label>
+                                            <input type="number" class="form-control" id="totalQuestions" value="10" min="1" max="50">
+                                            <div class="form-text">Set to 0 for unlimited questions</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Format Settings -->
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="bi bi-palette me-2"></i>Format Settings</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="nextFormat" class="form-label">Next Question Format</label>
+                                            <input type="text" class="form-control" id="nextFormat" value="♪⁠┌⁠|⁠∵⁠|⁠┘⁠♪ＮＥＸＴ└⁠|⁠∵⁠|⁠┐⁠♪">
+                                            <div class="form-text">Text shown after each question</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="endFormat" class="form-label">End Quiz Format</label>
+                                            <input type="text" class="form-control" id="endFormat" value="♪⁠┌⁠|⁠∵⁠|⁠┘⁠♪ＥＮＤ└⁠|⁠∵⁠|⁠┐⁠♪">
+                                            <div class="form-text">Text shown after the last question</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Preview Section -->
+                        <div class="col-12">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="bi bi-eye me-2"></i>Scoring Preview</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="scoringPreview">
+                                        <p><strong>Question 1:</strong> <span id="previewFirst">4 points (all participants)</span></p>
+                                        <p><strong>Questions 2-9:</strong> <span id="previewMiddle">4-2-2-1 points</span></p>
+                                        <p><strong>Question 10:</strong> <span id="previewLast">Normal scoring</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveSettings()" data-bs-dismiss="modal">Save Settings</button>
                 </div>
             </div>
         </div>

@@ -10,6 +10,9 @@
     --nav-link-hover-color: #1e40af;
     --logo-border-color: rgba(30, 64, 175, 0.2);
     --logo-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    --settings-accent: #3b82f6;
+    --question-number-bg: #e0f2fe;
+    --question-number-color: #0277bd;
 }
 
 [data-theme="dark"] {
@@ -23,6 +26,9 @@
     --nav-link-hover-color: #3b82f6;
     --logo-border-color: rgba(59, 130, 246, 0.3);
     --logo-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    --settings-accent: #60a5fa;
+    --question-number-bg: #1e3a8a;
+    --question-number-color: #93c5fd;
 }
 
 /* Apply theme variables */
@@ -60,23 +66,6 @@ body {
 }
 
 .navbar-brand:hover .brand-logo {
-    transform: scale(1.15);
-    border-color: var(--navbar-brand-color);
-    box-shadow: var(--logo-shadow);
-}
-
-/* Logo-only version for very small screens */
-.brand-logo-only {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-    object-fit: cover;
-    border: 2px solid var(--logo-border-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.navbar-brand:hover .brand-logo-only {
     transform: scale(1.15);
     border-color: var(--navbar-brand-color);
     box-shadow: var(--logo-shadow);
@@ -205,6 +194,184 @@ body {
     z-index: 1;
 }
 
+/* Question Number Display */
+.alert-info {
+    background-color: var(--question-number-bg) !important;
+    border-color: var(--question-number-color) !important;
+    color: var(--question-number-color) !important;
+    border-radius: 12px;
+    border-width: 2px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+    animation: questionPulse 2s ease-in-out infinite;
+}
+
+@keyframes questionPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+#questionNumberDisplay {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--settings-accent);
+}
+
+/* Settings Modal Styling */
+.modal-content {
+    background-color: var(--custom-card-bg) !important;
+    border: 1px solid var(--custom-border-color) !important;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, var(--settings-accent), #1e40af);
+    color: white !important;
+    border-radius: 16px 16px 0 0;
+    border-bottom: none;
+    padding: 1.5rem;
+}
+
+.modal-title {
+    font-family: 'Crimson Text', serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+}
+
+.modal-body {
+    padding: 2rem;
+    background-color: var(--custom-card-bg);
+}
+
+.modal-footer {
+    background-color: var(--custom-card-bg);
+    border-top: 1px solid var(--custom-border-color);
+    border-radius: 0 0 16px 16px;
+    padding: 1.5rem;
+}
+
+/* Settings Cards */
+.modal-body .card {
+    border: 2px solid var(--custom-border-color);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background-color: var(--custom-card-bg);
+}
+
+.modal-body .card:hover {
+    border-color: var(--settings-accent);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
+}
+
+.modal-body .card-header {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(30, 64, 175, 0.05));
+    border-bottom: 1px solid var(--custom-border-color);
+    border-radius: 10px 10px 0 0;
+    font-weight: 600;
+    color: var(--settings-accent);
+}
+
+.modal-body .card-body {
+    background-color: var(--custom-card-bg);
+    border-radius: 0 0 10px 10px;
+}
+
+/* Settings Form Controls */
+.modal-body .form-control {
+    border: 2px solid var(--custom-border-color);
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+    background-color: var(--custom-card-bg);
+    color: var(--bs-body-color);
+}
+
+.modal-body .form-control:focus {
+    border-color: var(--settings-accent);
+    box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.15);
+    background-color: var(--custom-card-bg);
+}
+
+.modal-body .form-check-input {
+    border: 2px solid var(--custom-border-color);
+    border-radius: 6px;
+    width: 1.2em;
+    height: 1.2em;
+}
+
+.modal-body .form-check-input:checked {
+    background-color: var(--settings-accent);
+    border-color: var(--settings-accent);
+}
+
+.modal-body .form-check-input:focus {
+    box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.15);
+}
+
+/* Preview Section */
+.modal-body .bg-light {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(30, 64, 175, 0.02)) !important;
+    border: 2px dashed var(--settings-accent);
+    border-radius: 12px;
+}
+
+[data-theme="dark"] .modal-body .bg-light {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(30, 64, 175, 0.05)) !important;
+}
+
+#scoringPreview p {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+#scoringPreview span {
+    color: var(--settings-accent);
+    font-weight: 600;
+}
+
+/* Settings Button in Navbar */
+.btn-outline-primary {
+    border: 2px solid var(--settings-accent) !important;
+    color: var(--settings-accent) !important;
+    background: transparent !important;
+    border-radius: 50% !important;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-outline-primary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: var(--settings-accent);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    transform: translate(-50%, -50%);
+    z-index: -1;
+}
+
+.btn-outline-primary:hover::before {
+    width: 100%;
+    height: 100%;
+}
+
+.btn-outline-primary:hover {
+    color: white !important;
+    transform: scale(1.1) rotate(90deg);
+    border-color: var(--settings-accent) !important;
+}
+
 /* Mobile navbar adjustments */
 @media (max-width: 991.98px) {
     .navbar-collapse {
@@ -228,9 +395,16 @@ body {
         border-radius: 8px !important;
         height: 40px;
     }
+    
+    .btn-outline-primary {
+        margin-top: 10px;
+        width: 100%;
+        border-radius: 8px !important;
+        height: 40px;
+    }
 }
 
-/* Responsive logo adjustments */
+/* Responsive adjustments */
 @media (max-width: 768px) {
     body {
         padding-top: 70px;
@@ -253,6 +427,14 @@ body {
     .navbar-brand {
         font-size: 1.2rem;
     }
+    
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+    
+    .modal-body {
+        padding: 1rem;
+    }
 }
 
 @media (max-width: 576px) {
@@ -263,6 +445,11 @@ body {
     
     .brand-text {
         font-size: 1rem;
+    }
+    
+    .alert-info {
+        font-size: 0.9rem;
+        padding: 0.75rem;
     }
 }
 
@@ -310,6 +497,21 @@ body {
     border-color: #86b7fe !important;
     color: var(--bs-body-color) !important;
     box-shadow: 0 0 0 0.25rem rgba(134, 183, 254, 0.25);
+}
+
+/* Dark theme modal styling */
+[data-theme="dark"] .modal-content {
+    background-color: var(--custom-card-bg) !important;
+    border-color: var(--custom-border-color) !important;
+}
+
+[data-theme="dark"] .modal-body,
+[data-theme="dark"] .modal-footer {
+    background-color: var(--custom-card-bg) !important;
+}
+
+[data-theme="dark"] .btn-close {
+    filter: invert(1);
 }
 
 /* Custom participant button styling */
