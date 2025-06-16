@@ -43,11 +43,29 @@ let scoringConfig = {
     }
 };
 
+// Enhanced data structure to track question-specific entries
+let questionEntries = {}; // Track entries per question: {1: ['Alice', 'Bob'], 2: ['Charlie'], ...}
+let questionTopics = {}; // Track topics per question: {1: 'Topic 1', 2: 'Topic 2', ...}
+let questionAnswers = {}; // Track answers per question: {1: 'Answer 1', 2: 'Answer 2', ...}
+
 // Score History Tracking
 let scoreHistory = [];
 let participants = {};
 let currentEntries = [];
 let questionNumber = 1;
+
+// Initialize question data
+function initializeQuestionData() {
+    if (!questionEntries[questionNumber]) {
+        questionEntries[questionNumber] = [];
+    }
+    if (!questionTopics[questionNumber]) {
+        questionTopics[questionNumber] = '';
+    }
+    if (!questionAnswers[questionNumber]) {
+        questionAnswers[questionNumber] = '';
+    }
+}
 
 // Settings Management
 function saveSettings() {
@@ -122,22 +140,22 @@ function updateScoringPreview() {
     
     if (previewFirst) {
         if (scoringConfig.firstQuestion.autoPoints) {
-            previewFirst.textContent = `${scoringConfig.firstQuestion.pointValue} points (all participants)`;
+            previewFirst.innerHTML = `<strong>Modified Mode:</strong> ${scoringConfig.firstQuestion.pointValue} points (all participants)`;
         } else {
-            previewFirst.textContent = `Normal scoring`;
+            previewFirst.innerHTML = `<strong>Original Mode:</strong> 4-2-2-1 distribution`;
         }
     }
     
     if (previewMiddle) {
         const { firstPlace, secondPlace, thirdPlace, otherPlace } = scoringConfig.middleQuestions;
-        previewMiddle.textContent = `${firstPlace}-${secondPlace}-${thirdPlace}-${otherPlace} points`;
+        previewMiddle.innerHTML = `<strong>Standard:</strong> ${firstPlace}-${secondPlace}-${thirdPlace}-${otherPlace} points`;
     }
     
     if (previewLast) {
         if (scoringConfig.lastQuestion.autoPoints) {
-            previewLast.textContent = `${scoringConfig.lastQuestion.pointValue} points (all participants)`;
+            previewLast.innerHTML = `<strong>Modified Mode:</strong> ${scoringConfig.lastQuestion.pointValue} points (all participants)`;
         } else {
-            previewLast.textContent = `Normal scoring`;
+            previewLast.innerHTML = `<strong>Original Mode:</strong> 4-2-2-1 distribution`;
         }
     }
 }
@@ -146,13 +164,30 @@ function updateScoringPreview() {
 function updateQuestionNumber() {
     const display = document.getElementById('questionNumberDisplay');
     if (display) {
+        let questionText = '';
         if (scoringConfig.totalQuestions > 0) {
-            display.textContent = `${questionNumber} of ${scoringConfig.totalQuestions}`;
+            questionText = `${questionNumber} of ${scoringConfig.totalQuestions}`;
         } else {
-            display.textContent = questionNumber;
+            questionText = questionNumber;
         }
+        
+        // Add mode indicator
+        const isFirstQuestion = questionNumber === 1;
+        const isLastQuestion = scoringConfig.totalQuestions > 0 && questionNumber === scoringConfig.totalQuestions;
+        
+        let modeIndicator = '';
+        if (isFirstQuestion && scoringConfig.firstQuestion.autoPoints) {
+            modeIndicator = ' <span class="badge bg-info ms-2">Modified Mode</span>';
+        } else if (isLastQuestion && scoringConfig.lastQuestion.autoPoints) {
+            modeIndicator = ' <span class="badge bg-info ms-2">Modified Mode</span>';
+        } else if (isFirstQuestion || isLastQuestion) {
+            modeIndicator = ' <span class="badge bg-secondary ms-2">Original Mode</span>';
+        }
+        
+        display.innerHTML = questionText + modeIndicator;
     }
 }
+
 
 // Participant Management
 function addParticipant() {
@@ -183,48 +218,68 @@ function createParticipantButton(name) {
     document.getElementById('participantList').appendChild(btn);
 }
 
-// Enhanced Scoring Logic with Custom Settings
+// Enhanced addToRound function with question tracking
 function addToRound(name) {
-    if (currentEntries.includes(name)) {
+    initializeQuestionData();
+    
+    if (questionEntries[questionNumber].includes(name)) {
         showToast('This participant already answered this question!', 'warning');
         return;
     }
 
-    const position = currentEntries.length;
-    currentEntries.push(name);
+    const position = questionEntries[questionNumber].length;
+    questionEntries[questionNumber].push(name);
     
     const points = calculatePoints(position, questionNumber);
     
-    // Record score change
+    // Record score change with question number
     scoreHistory.push({
         name: name,
         points: points,
         previousTotal: participants[name].total,
-        questionNumber: questionNumber
+        questionNumber: questionNumber,
+        position: position
     });
     
-    participants[name].scores.push(points);
-    participants[name].total += points;
+    // Ensure participant has enough score slots
+    while (participants[name].scores.length < questionNumber) {
+        participants[name].scores.push(0);
+    }
+    
+    // Update score for this specific question
+    if (participants[name].scores[questionNumber - 1] === undefined) {
+        participants[name].scores[questionNumber - 1] = 0;
+    }
+    
+    const previousQuestionScore = participants[name].scores[questionNumber - 1];
+    participants[name].scores[questionNumber - 1] = points;
+    participants[name].total = participants[name].total - previousQuestionScore + points;
+    
+    // Update currentEntries for backward compatibility
+    if (!currentEntries.includes(name)) {
+        currentEntries.push(name);
+    }
     
     updateTable();
-    showToast(`${name} scored ${points} points!`, 'info');
+    updateParticipantButtonStates();
+    showToast(`${name} scored ${points} points for Question ${questionNumber}!`, 'info');
 }
 
 function calculatePoints(position, questionNum) {
     const isFirstQuestion = questionNum === 1;
     const isLastQuestion = scoringConfig.totalQuestions > 0 && questionNum === scoringConfig.totalQuestions;
     
-    // First question logic
+    // First question logic - only auto-assign if enabled
     if (isFirstQuestion && scoringConfig.firstQuestion.autoPoints) {
         return scoringConfig.firstQuestion.pointValue;
     }
     
-    // Last question logic
+    // Last question logic - only auto-assign if enabled
     if (isLastQuestion && scoringConfig.lastQuestion.autoPoints) {
         return scoringConfig.lastQuestion.pointValue;
     }
     
-    // Middle questions or non-auto first/last questions
+    // Default scoring for all questions (including first/last when auto-assign is disabled)
     const { firstPlace, secondPlace, thirdPlace, otherPlace } = scoringConfig.middleQuestions;
     
     if (position === 0) return firstPlace;
@@ -238,6 +293,7 @@ function autoAssignPoints() {
     const isFirstQuestion = questionNumber === 1;
     const isLastQuestion = scoringConfig.totalQuestions > 0 && questionNumber === scoringConfig.totalQuestions;
     
+    // Only auto-assign if the setting is enabled for that question type
     if ((isFirstQuestion && scoringConfig.firstQuestion.autoPoints) || 
         (isLastQuestion && scoringConfig.lastQuestion.autoPoints)) {
         
@@ -246,7 +302,7 @@ function autoAssignPoints() {
             scoringConfig.lastQuestion.pointValue;
             
         Object.keys(participants).forEach(name => {
-            if (!currentEntries.includes(name)) {
+            if (!questionEntries[questionNumber].includes(name)) {
                 scoreHistory.push({
                     name: name,
                     points: pointValue,
@@ -254,53 +310,62 @@ function autoAssignPoints() {
                     questionNumber: questionNumber
                 });
                 
-                participants[name].scores.push(pointValue);
+                // Ensure participant has enough score slots
+                while (participants[name].scores.length < questionNumber) {
+                    participants[name].scores.push(0);
+                }
+                
+                participants[name].scores[questionNumber - 1] = pointValue;
                 participants[name].total += pointValue;
-                currentEntries.push(name);
+                questionEntries[questionNumber].push(name);
+                
+                if (!currentEntries.includes(name)) {
+                    currentEntries.push(name);
+                }
             }
         });
         
         updateTable();
+        updateParticipantButtonStates();
         showToast(`Auto-assigned ${pointValue} points to all participants!`, 'success');
     }
 }
 
-// Undo Functionality
-function undoDelete() {
-    if (scoreHistory.length > 0) {
-        const lastAction = scoreHistory.pop();
-        const participant = participants[lastAction.name];
-        
-        if (participant) {
-            participant.total = lastAction.previousTotal;
-            participant.scores.pop();
-            
-            if (questionNumber === lastAction.questionNumber) {
-                const index = currentEntries.indexOf(lastAction.name);
-                if (index > -1) currentEntries.splice(index, 1);
-            }
-            
-            updateTable();
-            showToast(`Undid ${lastAction.points} point(s) for ${lastAction.name}`, 'success');
-        }
-    } else {
-        showToast("No score changes to undo", 'warning');
+// Previous question function
+function previousQuestion() {
+    if (questionNumber <= 1) {
+        showToast('Already at the first question!', 'warning');
+        return;
     }
+    
+    // Save current question data
+    saveCurrentQuestionData();
+    
+    // Move to previous question
+    questionNumber--;
+    
+    // Load previous question data
+    loadQuestionData();
+    
+    updateQuestionNumber();
+    showToast(`Moved to Question ${questionNumber}`, 'info');
 }
 
-// Enhanced Round Management
+// Enhanced next question function
 function nextQuestion() {
     // Auto-assign points if needed before moving to next question
     autoAssignPoints();
     
-    currentEntries = [];
+    // Save current question data
+    saveCurrentQuestionData();
+    
     questionNumber++;
+    
+    // Load or initialize next question data
+    loadQuestionData();
     
     // Update question number display
     updateQuestionNumber();
-    
-    // Only clear the answer field, keep the topic
-    document.getElementById('answerInput').value = '';
     
     // Check if this is beyond the set total questions
     if (scoringConfig.totalQuestions > 0 && questionNumber > scoringConfig.totalQuestions) {
@@ -310,7 +375,106 @@ function nextQuestion() {
     }
 }
 
-// UI Updates
+// Save current question data
+function saveCurrentQuestionData() {
+    const topic = document.getElementById('topicInput')?.value.trim() || '';
+    const answer = document.getElementById('answerInput')?.value.trim() || '';
+    
+    questionTopics[questionNumber] = topic;
+    questionAnswers[questionNumber] = answer;
+    
+    // questionEntries is already saved through addToRound
+}
+
+// Load question data
+function loadQuestionData() {
+    initializeQuestionData();
+    
+    // Load topic and answer
+    const topicInput = document.getElementById('topicInput');
+    const answerInput = document.getElementById('answerInput');
+    
+    if (topicInput) topicInput.value = questionTopics[questionNumber] || '';
+    if (answerInput) answerInput.value = questionAnswers[questionNumber] || '';
+    
+    // Update currentEntries for the current question
+    currentEntries = [...questionEntries[questionNumber]];
+    
+    // Update participant button states
+    updateParticipantButtonStates();
+}
+
+// Update participant button states based on current question
+function updateParticipantButtonStates() {
+    const buttons = document.querySelectorAll('.participant-btn');
+    buttons.forEach(btn => {
+        const name = btn.textContent.trim().replace(/^.*?\s/, ''); // Remove icon and get name
+        if (questionEntries[questionNumber] && questionEntries[questionNumber].includes(name)) {
+            btn.classList.add('btn-success');
+            btn.classList.remove('btn-outline-secondary');
+            btn.innerHTML = `<i class="bi bi-check-circle me-2"></i>${name}`;
+        } else {
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-secondary');
+            btn.innerHTML = `<i class="bi bi-person me-2"></i>${name}`;
+        }
+    });
+}
+
+// Enhanced undo function that works with question-specific tracking
+function undoDelete() {
+    if (scoreHistory.length > 0) {
+        // Find the most recent action for the current question
+        let actionIndex = -1;
+        for (let i = scoreHistory.length - 1; i >= 0; i--) {
+            if (scoreHistory[i].questionNumber === questionNumber) {
+                actionIndex = i;
+                break;
+            }
+        }
+        
+        if (actionIndex === -1) {
+            showToast("No score changes to undo for this question", 'warning');
+            return;
+        }
+        
+        const lastAction = scoreHistory[actionIndex];
+        const participant = participants[lastAction.name];
+        
+        if (participant) {
+            // Remove points from total
+            participant.total -= lastAction.points;
+            
+            // Reset question score
+            if (participant.scores[questionNumber - 1] !== undefined) {
+                participant.scores[questionNumber - 1] = 0;
+            }
+            
+            // Remove from question entries
+            const entryIndex = questionEntries[questionNumber].indexOf(lastAction.name);
+            if (entryIndex > -1) {
+                questionEntries[questionNumber].splice(entryIndex, 1);
+            }
+            
+            // Remove from current entries
+            const currentIndex = currentEntries.indexOf(lastAction.name);
+            if (currentIndex > -1) {
+                currentEntries.splice(currentIndex, 1);
+            }
+            
+            // Remove from history
+            scoreHistory.splice(actionIndex, 1);
+            
+            updateTable();
+            updateParticipantButtonStates();
+            showToast(`Undid ${lastAction.points} point(s) for ${lastAction.name} in Question ${questionNumber}`, 'success');
+        }
+    } else {
+        showToast("No score changes to undo", 'warning');
+    }
+}
+
+// Enhanced UI Updates
 function updateTable() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
@@ -323,16 +487,40 @@ function updateTable() {
         const rank = index + 1;
         const rankBadge = getRankBadge(rank);
         
+        // Create detailed score breakdown showing all questions
+        const maxQuestions = Math.max(questionNumber, ...Object.keys(questionEntries).map(Number));
+        const scoreBreakdown = [];
+        
+        for (let i = 1; i <= maxQuestions; i++) {
+            const score = data.scores[i - 1];
+            if (score === undefined || score === 0) {
+                if (i === questionNumber) {
+                    scoreBreakdown.push(`<span class="score-current">-</span>`);
+                } else {
+                    scoreBreakdown.push(`<span class="score-blank">-</span>`);
+                }
+            } else {
+                if (i === questionNumber) {
+                    scoreBreakdown.push(`<span class="score-current">${score}</span>`);
+                } else {
+                    scoreBreakdown.push(score);
+                }
+            }
+        }
+        
         row.innerHTML = `
             <td>${rankBadge}</td>
             <td><strong>${name}</strong></td>
-            <td><code>${data.scores.join(' + ')}</code></td>
+            <td><code>${scoreBreakdown.join(' + ')}</code></td>
             <td><span class="badge bg-primary fs-6">${data.total}</span></td>
         `;
         
         // Add animation for recent updates
-        if (scoreHistory.length > 0 && scoreHistory[scoreHistory.length - 1].name === name) {
-            row.classList.add('score-updated');
+        if (scoreHistory.length > 0) {
+            const recentAction = scoreHistory[scoreHistory.length - 1];
+            if (recentAction.name === name && recentAction.questionNumber === questionNumber) {
+                row.classList.add('score-updated');
+            }
         }
         
         tbody.appendChild(row);
@@ -403,7 +591,6 @@ function showToast(message, type = 'info') {
     });
 }
 
-// Enhanced Clipboard Function with Custom Format
 // Enhanced Clipboard Function with Custom Format and Total Scores
 function copyRecords() {
     const topic = document.getElementById('topicInput')?.value.trim() || "Quiz Topic";
@@ -441,7 +628,7 @@ function copyRecords() {
     }
 
     // Create the formatted output
-    const formattedOutput = `🏐${topic}🟠
+    const formattedOutput = `${topic}
 Answer: ${answer}
 
 Tally: 
@@ -461,7 +648,6 @@ ${formatText}`;
         });
 }
 
-
 // Delete Participant Function
 function deleteParticipant() {
     const name = prompt("Enter participant name to delete:");
@@ -476,7 +662,22 @@ function deleteParticipant() {
             }
         });
         
+        // Remove from all question entries
+        Object.keys(questionEntries).forEach(qNum => {
+            const index = questionEntries[qNum].indexOf(name);
+            if (index > -1) {
+                questionEntries[qNum].splice(index, 1);
+            }
+        });
+        
+        // Remove from current entries
+        const currentIndex = currentEntries.indexOf(name);
+        if (currentIndex > -1) {
+            currentEntries.splice(currentIndex, 1);
+        }
+        
         updateTable();
+        updateParticipantButtonStates();
         showToast(`${name} has been deleted`, 'success');
     } else if (name) {
         showToast('Participant not found', 'warning');
@@ -522,6 +723,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize settings event listeners
     initializeSettingsListeners();
+    
+    // Initialize question tracking
+    initializeQuestionData();
+    loadQuestionData();
     
     // Update question number display
     updateQuestionNumber();
