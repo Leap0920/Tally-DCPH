@@ -377,10 +377,9 @@ function nextQuestion() {
 
 // Save current question data
 function saveCurrentQuestionData() {
-    const topic = document.getElementById('topicInput')?.value.trim() || '';
+    // Don't save topic anymore - let it persist across all questions
     const answer = document.getElementById('answerInput')?.value.trim() || '';
     
-    questionTopics[questionNumber] = topic;
     questionAnswers[questionNumber] = answer;
     
     // questionEntries is already saved through addToRound
@@ -390,11 +389,10 @@ function saveCurrentQuestionData() {
 function loadQuestionData() {
     initializeQuestionData();
     
-    // Load topic and answer
-    const topicInput = document.getElementById('topicInput');
+    // Don't load topic - let it persist across questions
+    // Only load the answer for each specific question
     const answerInput = document.getElementById('answerInput');
     
-    if (topicInput) topicInput.value = questionTopics[questionNumber] || '';
     if (answerInput) answerInput.value = questionAnswers[questionNumber] || '';
     
     // Update currentEntries for the current question
@@ -403,6 +401,12 @@ function loadQuestionData() {
     // Update participant button states
     updateParticipantButtonStates();
 }
+
+function getTopicForCopy() {
+    // Always use the current topic input value
+    return document.getElementById('topicInput')?.value.trim() || "Quiz Topic";
+}
+   
 
 // Update participant button states based on current question
 function updateParticipantButtonStates() {
@@ -593,14 +597,16 @@ function showToast(message, type = 'info') {
 
 // Enhanced Clipboard Function with Custom Format and Total Scores
 function copyRecords() {
-    const topic = document.getElementById('topicInput')?.value.trim() || "Quiz Topic";
+    const topic = getTopicForCopy(); // Use persistent topic
     const answer = document.getElementById('answerInput')?.value.trim() || "Quiz Answer";
     
-    // Format participant records
+    // Format participant records with filtered scores (remove zeros)
     const participantRecords = Object.entries(participants)
         .sort((a, b) => b[1].total - a[1].total)
         .map(([name, data]) => {
-            const scoreBreakdown = data.scores.length > 0 ? data.scores.join('+') : '0';
+            // Filter out zeros from the scores array
+            const filteredScores = data.scores.filter(score => score !== 0 && score !== undefined);
+            const scoreBreakdown = filteredScores.length > 0 ? filteredScores.join('+') : '0';
             return `${name}: ${scoreBreakdown}`;
         })
         .join('\n');
@@ -646,6 +652,12 @@ ${formatText}`;
             console.error('Failed to copy:', err);
             showToast('Failed to copy records', 'danger');
         });
+}
+
+// Add this helper function to handle topic persistence for copying
+function getTopicForCopy() {
+    // Always use the current topic input value
+    return document.getElementById('topicInput')?.value.trim() || "Quiz Topic";
 }
 
 // Delete Participant Function

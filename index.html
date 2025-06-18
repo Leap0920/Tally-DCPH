@@ -13,17 +13,15 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Theme Toggle Button -->
-    <button class="btn theme-toggle position-fixed" onclick="toggleTheme()" style="top: 20px; right: 20px; z-index: 1000;">
-        <i class="bi bi-lightbulb lightbulb fs-4"></i>
-    </button>
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress"></div>
 
     <!-- Character Carousel Hero Section -->
-    <section class="character-carousel-section">
+    <section class="character-carousel-section fade-in-section">
         <div class="scroll-wrapper">
             <div class="scroll-track">
                 <!-- First set of characters -->
-                <div class="character-item">
+                <div class="character-item stagger-animation">
                     <img src="conan.jpg" alt="Conan Edogawa" class="character-image">
                     <div class="character-overlay">
                         <h3 class="character-name">Conan Edogawa</h3>
@@ -31,7 +29,7 @@
                     </div>
                 </div>
                 
-                <div class="character-item">
+                <div class="character-item stagger-animation">
                     <img src="shinichi.jpg" alt="Shinichi Kudo" class="character-image">
                     <div class="character-overlay">
                         <h3 class="character-name">Shinichi Kudo</h3>
@@ -39,7 +37,7 @@
                     </div>
                 </div>
                 
-                <div class="character-item">
+                <div class="character-item stagger-animation">
                     <img src="ran.jpg" alt="Ran Mouri" class="character-image">
                     <div class="character-overlay">
                         <h3 class="character-name">Ran Mouri</h3>
@@ -47,7 +45,7 @@
                     </div>
                 </div>
                 
-                <div class="character-item">
+                <div class="character-item stagger-animation">
                     <img src="kogoro.jpg" alt="Kogoro Mouri" class="character-image">
                     <div class="character-overlay">
                         <h3 class="character-name">Kogoro Mouri</h3>
@@ -55,7 +53,7 @@
                     </div>
                 </div>
                 
-                <div class="character-item">
+                <div class="character-item stagger-animation">
                     <img src="ai.jpg" alt="Ai Haibara" class="character-image">
                     <div class="character-overlay">
                         <h3 class="character-name">Ai Haibara</h3>
@@ -63,7 +61,7 @@
                     </div>
                 </div>
                 
-                <div class="character-item">
+                <div class="character-item stagger-animation">
                     <img src="heiji.jpg" alt="Heiji Hattori" class="character-image">
                     <div class="character-overlay">
                         <h3 class="character-name">Heiji Hattori</h3>
@@ -71,7 +69,7 @@
                     </div>
                 </div>
                 
-                <div class="character-item">
+                <div class="character-item stagger-animation">
                     <img src="kazuha.jpg" alt="Kazuha Toyama" class="character-image">
                     <div class="character-overlay">
                         <h3 class="character-name">Kazuha Toyama</h3>
@@ -80,7 +78,7 @@
                 </div>
                 
                 <!-- Duplicate set for seamless infinite loop -->
-                <div class="character-item">
+                <div class="character-item stagger-animation">
                     <img src="conan.jpg" alt="Conan Edogawa" class="character-image">
                     <div class="character-overlay">
                         <h3 class="character-name">Conan Edogawa</h3>
@@ -88,7 +86,7 @@
                     </div>
                 </div>
                 
-                <div class="character-item">
+                <div class="character-item stagger-animation">
                     <img src="shinichi.jpg" alt="Shinichi Kudo" class="character-image">
                     <div class="character-overlay">
                         <h3 class="character-name">Shinichi Kudo</h3>
@@ -96,7 +94,7 @@
                     </div>
                 </div>
                 
-                <div class="character-item">
+                <div class="character-item stagger-animation">
                     <img src="ran.jpg" alt="Ran Mouri" class="character-image">
                     <div class="character-overlay">
                         <h3 class="character-name">Ran Mouri</h3>
@@ -104,7 +102,7 @@
                     </div>
                 </div>
                 
-                <div class="character-item">
+                <div class="character-item stagger-animation">
                     <img src="kogoro.jpg" alt="Kogoro Mouri" class="character-image">
                     <div class="character-overlay">
                         <h3 class="character-name">Kogoro Mouri</h3>
@@ -112,7 +110,7 @@
                     </div>
                 </div>
                 
-                <div class="character-item">
+                <div class="character-item stagger-animation">
                     <img src="ai.jpg" alt="Ai Haibara" class="character-image">
                     <div class="character-overlay">
                         <h3 class="character-name">Ai Haibara</h3>
@@ -120,7 +118,7 @@
                     </div>
                 </div>
                 
-                <div class="character-item">
+                <div class="character-item stagger-animation">
                     <img src="heiji.jpg" alt="Heiji Hattori" class="character-image">
                     <div class="character-overlay">
                         <h3 class="character-name">Heiji Hattori</h3>
@@ -128,7 +126,7 @@
                     </div>
                 </div>
                 
-                <div class="character-item">
+                <div class="character-item stagger-animation">
                     <img src="kazuha.jpg" alt="Kazuha Toyama" class="character-image">
                     <div class="character-overlay">
                         <h3 class="character-name">Kazuha Toyama</h3>
@@ -145,20 +143,20 @@
             <div class="row justify-content-center">
                 <div class="col-lg-10 text-center">
                     <div class="title-content">
-                        <div class="badge-container mb-4">
+                        <div class="badge-container mb-4 scale-in">
                             <span class="badge bg-warning text-dark fs-6 px-4 py-2">🇵🇭 PHILIPPINES CHAPTER 🇵🇭</span>
                         </div>
-                        <h1 class="main-title mb-4">
+                        <h1 class="main-title mb-4 fade-in-section">
                             DETECTIVE CONAN PH: ANIME AND MANGA
                         </h1>
-                        <p class="main-subtitle mb-5">
+                        <p class="main-subtitle mb-5 fade-in-section">
                             The leading and the largest organization of Detective Conan fans in the Philippines
                         </p>
-                        <div class="main-buttons">
-                            <a href="Tally.html" class="btn btn-primary btn-lg me-3 mb-3">
+                        <div class="main-buttons fade-in-section">
+                            <a href="Tally.html" class="btn btn-primary btn-lg me-3 mb-3 slide-in-left">
                                 <i class="bi bi-play-fill me-2"></i>Start Scoring
                             </a>
-                            <button class="btn btn-outline-light btn-lg mb-3" onclick="scrollToFeatures()">
+                            <button class="btn btn-outline-light btn-lg mb-3 slide-in-right" onclick="scrollToFeatures()">
                                 <i class="bi bi-info-circle me-2"></i>Learn More
                             </button>
                         </div>
@@ -173,13 +171,13 @@
         <div class="container">
             <div class="row text-center mb-5">
                 <div class="col-12">
-                    <h2 class="section-title">Our Foundation</h2>
-                    <p class="section-subtitle">Building the Detective Conan community in the Philippines</p>
+                    <h2 class="section-title fade-in-section">Our Foundation</h2>
+                    <p class="section-subtitle fade-in-section">Building the Detective Conan community in the Philippines</p>
                 </div>
             </div>
             <div class="row g-4">
                 <div class="col-md-4">
-                    <div class="vmg-card h-100">
+                    <div class="vmg-card h-100 slide-in-left">
                         <div class="vmg-icon">
                             <i class="bi bi-eye"></i>
                         </div>
@@ -188,7 +186,7 @@
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="vmg-card h-100">
+                    <div class="vmg-card h-100 scale-in">
                         <div class="vmg-icon">
                             <i class="bi bi-bullseye"></i>
                         </div>
@@ -197,7 +195,7 @@
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="vmg-card h-100">
+                    <div class="vmg-card h-100 slide-in-right">
                         <div class="vmg-icon">
                             <i class="bi bi-trophy"></i>
                         </div>
@@ -214,30 +212,30 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6 mb-4 mb-lg-0">
-                    <div class="movie-content">
-                        <h2 class="movie-title mb-4">
+                    <div class="movie-content slide-in-left">
+                        <h2 class="movie-title mb-4 fade-in-section">
                             🎬 <span class="text-primary">Detective Conan Movie 28</span>
                         </h2>
-                        <h3 class="movie-subtitle mb-4">One-Eyed Flashback</h3>
-                        <p class="movie-description mb-4">
+                        <h3 class="movie-subtitle mb-4 fade-in-section">One-Eyed Flashback</h3>
+                        <p class="movie-description mb-4 fade-in-section">
                             Get ready for the most thrilling Detective Conan movie yet! Join the DCPH community for an exclusive 
                             <strong>Block Screening of One-Eyed Flashback</strong>. Experience the mystery, excitement, and 
                             camaraderie with fellow Detective Conan fans across the Philippines.
                         </p>
                         <div class="movie-highlights">
-                            <div class="highlight-item">
+                            <div class="highlight-item stagger-animation">
                                 <i class="bi bi-calendar-event text-primary me-3"></i>
                                 <span>DCPH Block Screening Event</span>
                             </div>
-                            <div class="highlight-item">
+                            <div class="highlight-item stagger-animation">
                                 <i class="bi bi-people-fill text-primary me-3"></i>
                                 <span>Community Exclusive Experience</span>
                             </div>
-                            <div class="highlight-item">
+                            <div class="highlight-item stagger-animation">
                                 <i class="bi bi-film text-primary me-3"></i>
                                 <span>Latest Detective Conan Movie</span>
                             </div>
-                            <div class="highlight-item">
+                            <div class="highlight-item stagger-animation">
                                 <i class="bi bi-heart-fill text-primary me-3"></i>
                                 <span>Made for Filipino DC Fans</span>
                             </div>
@@ -245,7 +243,7 @@
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    <div class="movie-video">
+                    <div class="movie-video slide-in-right">
                         <div class="video-container">
                             <iframe 
                                 src="https://www.youtube.com/embed/p6h57WqRRl8" 
@@ -255,7 +253,7 @@
                                 allowfullscreen>
                             </iframe>
                         </div>
-                        <div class="video-caption mt-3 text-center">
+                        <div class="video-caption mt-3 text-center fade-in-section">
                             <p class="mb-0"><strong>Official Trailer</strong> - Detective Conan Movie 28: One-Eyed Flashback</p>
                         </div>
                     </div>
@@ -271,39 +269,34 @@
                 <div class="col-12">
                     <div class="community-card text-center">
                         <div class="community-content">
-                            <h2 class="community-title mb-4">Join Our DCPH Community!</h2>
-                            <p class="community-description mb-4">
+                            <h2 class="community-title mb-4 fade-in-section">Join Our DCPH Community!</h2>
+                            <p class="community-description mb-4 fade-in-section">
                                 Connect with thousands of Detective Conan fans across the Philippines through our official social media channels.
                             </p>
                             <div class="social-links">
-                                <a href="https://www.facebook.com/groups/dcphanimeandmanga" target="_blank" class="btn btn-primary btn-lg me-3 mb-3">
+                                <a href="https://www.facebook.com/groups/dcphanimeandmanga" target="_blank" class="btn btn-primary btn-lg me-3 mb-3 stagger-animation">
                                     <i class="bi bi-facebook me-2"></i>
                                     Facebook Group
                                 </a>
-                                <a href="https://www.facebook.com/search/top?q=detective%20conan%20ph%3A%20anime%20and%20manga" target="_blank" class="btn btn-info btn-lg me-3 mb-3">
+                                <a href="https://www.facebook.com/search/top?q=detective%20conan%20ph%3A%20anime%20and%20manga" target="_blank" class="btn btn-info btn-lg me-3 mb-3 stagger-animation">
                                     <i class="bi bi-facebook me-2"></i>
                                     Facebook Page
                                 </a>
-                                <a href="https://www.instagram.com/conanph0304/?hl=en" target="_blank" class="btn btn-danger btn-lg me-3 mb-3">
+                                <a href="https://www.instagram.com/conanph0304/?hl=en" target="_blank" class="btn btn-danger btn-lg me-3 mb-3 stagger-animation">
                                     <i class="bi bi-instagram me-2"></i>
                                     Instagram
                                 </a>
-                                <a href="https://x.com/conanph0304?lang=en" target="_blank" class="btn btn-dark btn-lg mb-3">
+                                <a href="https://x.com/conanph0304?lang=en" target="_blank" class="btn btn-dark btn-lg mb-3 stagger-animation">
                                     <i class="bi bi-twitter-x me-2"></i>
                                     X (Twitter)
                                 </a>
                             </div>
                             <div class="mt-4">
-                                <a href="Tally.html" class="btn btn-success btn-lg">
+                                <a href="Tally.html" class="btn btn-success btn-lg scale-in">
                                     <i class="bi bi-arrow-right-circle me-2"></i>
                                     Launch Tally System
                                 </a>
                             </div>
-                        </div>
-                        <div class="community-decoration">
-                            <div class="floating-badge">🔍</div>
-                            <div class="floating-badge">📱</div>
-                            <div class="floating-badge">🏆</div>
                         </div>
                     </div>
                 </div>
@@ -312,12 +305,12 @@
     </section>
 
     <!-- Footer -->
-    <footer class="footer py-4">
+    <footer class="footer py-4 fade-in-section">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <p class="footer-text mb-0">
-                        © 2025 DETECTIVE CONAN PH: Anime and Manga. Made with ❤️ for Detective Conan fans.
+                        © 2025 DETECTIVE CONAN PH: Anime and Manga.
                     </p>
                 </div>
                 <div class="col-md-6 text-md-end">

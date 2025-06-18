@@ -198,6 +198,118 @@ body {
     z-index: 1;
 }
 
+/* Enhanced dark mode text fixes - add to your CSS */
+
+/* Form labels in dark mode */
+[data-theme="dark"] .form-label {
+    color: var(--bs-body-color) !important;
+}
+
+/* Form text helpers */
+[data-theme="dark"] .form-text {
+    color: #adb5bd !important;
+}
+
+/* Alert text in dark mode */
+[data-theme="dark"] .alert-light {
+    background-color: rgba(59, 130, 246, 0.1) !important;
+    border-color: rgba(59, 130, 246, 0.3) !important;
+    color: var(--bs-body-color) !important;
+}
+
+/* Modal text improvements */
+[data-theme="dark"] .modal-body .card-header h6 {
+    color: var(--settings-accent) !important;
+}
+
+/* Settings preview text */
+[data-theme="dark"] #scoringPreview p {
+    color: var(--bs-body-color) !important;
+}
+
+[data-theme="dark"] #scoringPreview span {
+    color: var(--settings-accent) !important;
+}
+
+/* Mode explanation text */
+[data-theme="dark"] .text-muted {
+    color: #adb5bd !important;
+}
+
+/* Small text in dark mode */
+[data-theme="dark"] .small {
+    color: #ced4da !important;
+}
+
+/* Input placeholders in dark mode */
+[data-theme="dark"] .form-control::placeholder {
+    color: #6c757d !important;
+    opacity: 1;
+}
+
+/* Button text contrast fixes */
+[data-theme="dark"] .btn-outline-secondary {
+    color: var(--bs-body-color) !important;
+    border-color: var(--custom-border-color) !important;
+}
+
+[data-theme="dark"] .btn-outline-secondary:hover {
+    color: white !important;
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+}
+
+/* Toast text in dark mode */
+[data-theme="dark"] .toast {
+    background-color: var(--custom-card-bg) !important;
+    border: 1px solid var(--custom-border-color) !important;
+    color: var(--bs-body-color) !important;
+}
+
+/* Navbar text improvements */
+[data-theme="dark"] .navbar-text {
+    color: var(--nav-link-color) !important;
+}
+
+/* Table header text */
+[data-theme="dark"] .table-dark th {
+    color: #f8f9fa !important;
+    background-color: #2d2d2d !important;
+    border-color: var(--custom-border-color) !important;
+}
+
+/* Enhanced contrast for better readability */
+[data-theme="dark"] {
+    --bs-body-color: #e9ecef;
+    --nav-link-color: #ced4da;
+}
+
+/* Fix participant button text visibility */
+[data-theme="dark"] .participant-btn {
+    color: var(--bs-body-color) !important;
+}
+
+[data-theme="dark"] .participant-btn.btn-success {
+    color: white !important;
+}
+
+/* Score breakdown text visibility */
+[data-theme="dark"] .table code {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    color: var(--settings-accent) !important;
+    border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+[data-theme="dark"] .score-blank {
+    color: #868e96 !important;
+}
+
+[data-theme="dark"] .score-current {
+    color: var(--settings-accent) !important;
+    background-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+
 /* Question Number Display */
 .alert-info {
     background-color: var(--question-number-bg) !important;

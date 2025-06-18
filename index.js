@@ -1,15 +1,3 @@
-// Theme Management
-function toggleTheme() {
-    const body = document.body;
-    if (body.getAttribute('data-theme') === 'dark') {
-        body.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light');
-    } else {
-        body.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-    }
-}
-
 // Smooth scroll to features section
 function scrollToFeatures() {
     document.getElementById('features').scrollIntoView({
@@ -19,12 +7,6 @@ function scrollToFeatures() {
 
 // --- AUTOMATIC CHARACTER CAROUSEL LOGIC ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize theme on page load
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    if (savedTheme === 'dark') {
-        document.body.setAttribute('data-theme', 'dark');
-    }
-
     // --- Automatic Character Carousel ---
     const slides = document.querySelectorAll('.character-slide');
     const dots = document.querySelectorAll('.dot');
@@ -72,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Auto-advance slides
     function startAutoSlide() {
         if (slides.length > 1) {
-            slideInterval = setInterval(nextSlide, 4000); // Change slide every 4 seconds
+            slideInterval = setInterval(nextSlide, 4000);
         }
     }
 
@@ -100,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dot.addEventListener('click', () => {
             showSlide(i);
             stopAutoSlide();
-            setTimeout(startAutoSlide, 5000); // Restart auto-slide after 5 seconds
+            setTimeout(startAutoSlide, 5000);
         });
     });
 
@@ -110,13 +92,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const screenWidth = window.innerWidth;
         
         characterImages.forEach(img => {
-            // Ensure images maintain aspect ratio and fill container
             img.style.width = '100%';
             img.style.height = '100%';
             img.style.objectFit = 'cover';
             img.style.objectPosition = 'center';
             
-            // Adjust based on screen size
             if (screenWidth <= 480) {
                 img.style.minHeight = '300px';
             } else if (screenWidth <= 768) {
@@ -135,7 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         characterImages.forEach((img, index) => {
             img.addEventListener('error', function() {
-                // Create fallback image with character name
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 canvas.width = 800;
@@ -155,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 ctx.textBaseline = 'middle';
                 ctx.fillText(this.alt || 'Character', 400, 300);
                 
-                // Convert canvas to data URL and set as image source
                 this.src = canvas.toDataURL();
             });
         });
@@ -237,10 +215,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 stopAutoSlide();
                 
                 if (diff > 0) {
-                    // Swipe left - next slide
                     nextSlide();
                 } else {
-                    // Swipe right - previous slide
                     prevSlide();
                 }
                 
@@ -273,25 +249,6 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// --- Stats hover effect ---
-document.querySelectorAll('.stat-item').forEach(item => {
-    item.addEventListener('mouseenter', () => {
-        const number = item.querySelector('.stat-number');
-        if (number) {
-            number.style.transform = 'scale(1.2)';
-            number.style.color = '#fbbf24';
-        }
-    });
-    
-    item.addEventListener('mouseleave', () => {
-        const number = item.querySelector('.stat-number');
-        if (number) {
-            number.style.transform = 'scale(1)';
-            number.style.color = 'var(--accent-color)';
-        }
-    });
-});
-
 // --- Social links hover effect ---
 document.querySelectorAll('.social-links .btn').forEach(btn => {
     btn.addEventListener('mouseenter', () => {
@@ -317,20 +274,12 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// --- Community floating badges animation ---
-document.querySelectorAll('.floating-badge').forEach((badge, index) => {
-    const delay = index * 0.5;
-    badge.style.animationDelay = `${delay}s`;
-});
-
 // --- Performance optimization ---
 let ticking = false;
 
 function updateOnScroll() {
-    // Throttle scroll events for better performance
     if (!ticking) {
         requestAnimationFrame(() => {
-            // Add any scroll-based animations here
             ticking = false;
         });
         ticking = true;
@@ -355,5 +304,4 @@ function preloadImages() {
     });
 }
 
-// Start preloading after page load
 window.addEventListener('load', preloadImages);
