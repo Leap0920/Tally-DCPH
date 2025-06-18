@@ -7,7 +7,7 @@ function scrollToFeatures() {
 
 // --- AUTOMATIC CHARACTER CAROUSEL LOGIC ---
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Automatic Character Carousel ---
+    // --- Character Carousel Animation ---
     const slides = document.querySelectorAll('.character-slide');
     const dots = document.querySelectorAll('.dot');
     let currentSlide = 0;
@@ -16,60 +16,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showSlide(index) {
         if (isTransitioning) return;
-        
         isTransitioning = true;
-        
-        // Remove active class from all slides and dots
         slides.forEach((slide, i) => {
-            slide.classList.remove('active');
-            if (dots[i]) dots[i].classList.remove('active');
+            slide.classList.toggle('active', i === index);
+            if (dots[i]) dots[i].classList.toggle('active', i === index);
         });
-        
-        // Add active class to current slide and dot
-        if (slides[index]) {
-            slides[index].classList.add('active');
-        }
-        if (dots[index]) {
-            dots[index].classList.add('active');
-        }
-        
         currentSlide = index;
-        
-        // Reset transition flag after animation completes
-        setTimeout(() => {
-            isTransitioning = false;
-        }, 500);
+        setTimeout(() => { isTransitioning = false; }, 500);
     }
 
-    function nextSlide() {
-        let next = (currentSlide + 1) % slides.length;
-        showSlide(next);
-    }
+    function nextSlide() { showSlide((currentSlide + 1) % slides.length); }
+    function prevSlide() { showSlide((currentSlide - 1 + slides.length) % slides.length); }
+    function startAutoSlide() { if (slides.length > 1) slideInterval = setInterval(nextSlide, 4000); }
+    function stopAutoSlide() { if (slideInterval) clearInterval(slideInterval); }
 
-    function prevSlide() {
-        let prev = (currentSlide - 1 + slides.length) % slides.length;
-        showSlide(prev);
-    }
-
-    // Auto-advance slides
-    function startAutoSlide() {
-        if (slides.length > 1) {
-            slideInterval = setInterval(nextSlide, 4000);
-        }
-    }
-
-    function stopAutoSlide() {
-        if (slideInterval) {
-            clearInterval(slideInterval);
-        }
-    }
-
-    // Initialize carousel if slides exist
     if (slides.length > 0) {
         showSlide(0);
         startAutoSlide();
-        
-        // Pause auto-slide on hover
         const carouselContainer = document.querySelector('.slideshow-container');
         if (carouselContainer) {
             carouselContainer.addEventListener('mouseenter', stopAutoSlide);
@@ -77,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Dot indicators click event
     dots.forEach((dot, i) => {
         dot.addEventListener('click', () => {
             showSlide(i);
@@ -165,14 +127,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 entry.target.style.transform = 'translateY(0)';
             }
         });
-    }, observerOptions);
-
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    
     document.querySelectorAll('.vmg-card').forEach(card => {
         card.style.opacity = '0';
         card.style.transform = 'translateY(30px)';
         card.style.transition = 'all 0.6s ease';
         observer.observe(card);
     });
+});
+
 
     // --- Typing effect for hero title ---
     const heroTitle = document.querySelector('.main-title');
@@ -180,7 +144,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const text = heroTitle.textContent;
         heroTitle.textContent = '';
         let i = 0;
-        
         function typeWriter() {
             if (i < text.length) {
                 heroTitle.textContent += text.charAt(i);
@@ -188,7 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(typeWriter, 50);
             }
         }
-        
         setTimeout(typeWriter, 1000);
     }
 
@@ -237,15 +199,14 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(startAutoSlide, 5000);
         }
     });
-});
+
 
 // --- Parallax effect for hero background ---
 window.addEventListener('scroll', () => {
     const scrolled = window.pageYOffset;
     const parallax = document.querySelector('.character-carousel-section');
     if (parallax) {
-        const speed = scrolled * 0.3;
-        parallax.style.transform = `translateY(${speed}px)`;
+        parallax.style.transform = `translateY(${scrolled * 0.3}px)`;
     }
 });
 
@@ -265,9 +226,7 @@ window.addEventListener('scroll', () => {
     const movieSection = document.querySelector('.movie-section');
     if (movieSection) {
         const rect = movieSection.getBoundingClientRect();
-        const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
-        
-        if (isVisible) {
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
             movieSection.style.opacity = '1';
             movieSection.style.transform = 'translateY(0)';
         }
