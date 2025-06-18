@@ -5,7 +5,7 @@ A sophisticated web-based scoring system designed for the Detective Conan Philip
 ## 🎯 Features
 
 ### Core Functionality
-- **Interactive Tally System**: Real-time scoring with customizable point distributions[2]
+- **Interactive Tally System**: Real-time scoring with customizable point distributions
 - **Question Navigation**: Previous/Next question functionality with retroactive scoring
 - **Flexible Scoring Modes**: 
   - Original Mode: Traditional 4-2-2-1 performance-based scoring
