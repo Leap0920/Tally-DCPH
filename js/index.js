@@ -250,11 +250,11 @@ window.addEventListener('scroll', updateOnScroll);
 // --- Preload images for better performance ---
 function preloadImages() {
     const imageUrls = [
-        'conan.jpg',
-        'shinichi.jpg', 
-        'ran.jpg',
-        'kogoro.jpg',
-        'ai.jpg'
+        'images/conan.jpg',
+        'images/shinichi.jpg', 
+        'images/ran.jpg',
+        'images/kogoro.jpg',
+        'images/ai.jpg'
     ];
     
     imageUrls.forEach(url => {
