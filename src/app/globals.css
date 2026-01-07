@@ -502,6 +502,94 @@ html {
   line-height: 1.7;
 }
 
+/* VMG Horizontal Section - Cards in One Row */
+.vmg-section-horizontal {
+  background: var(--bg-color);
+  padding: 120px 0;
+}
+
+.vmg-horizontal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+.vmg-card-horizontal {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 48px 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.vmg-card-horizontal.featured {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(30, 64, 175, 0.1) 100%);
+  border-color: rgba(59, 130, 246, 0.3);
+  transform: scale(1.02);
+}
+
+.vmg-card-horizontal:hover {
+  transform: translateY(-10px);
+  border-color: var(--primary-color);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+}
+
+.vmg-card-horizontal.featured:hover {
+  transform: scale(1.02) translateY(-10px);
+}
+
+.vmg-card-horizontal .vmg-icon {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, var(--primary-color), #1e40af);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 1.8rem;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.3);
+}
+
+.vmg-card-horizontal:hover .vmg-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.vmg-card-horizontal h3 {
+  font-family: 'Crimson Text', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 16px;
+}
+
+.vmg-card-horizontal p {
+  color: var(--secondary-text);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+@media (max-width: 992px) {
+  .vmg-horizontal-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .vmg-card-horizontal.featured {
+    transform: none;
+  }
+
+  .vmg-card-horizontal.featured:hover {
+    transform: translateY(-10px);
+  }
+}
+
 /* Movie Section with Enhanced Spacing */
 .movie-section {
   background: var(--card-bg);

@@ -138,101 +138,39 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Vision Mission Goals Section */}
-      <section id="features" className="vmg-section py-5">
+      {/* Vision Mission Goals Section - Horizontal */}
+      <section id="features" className="vmg-section-horizontal">
         <div className="container">
-          <div className="row text-center mb-5">
-            <div className="col-12">
-              <h2 className="section-title fade-in-section">Our Foundation</h2>
-              <p className="section-subtitle fade-in-section">Building the Detective Conan community in the Philippines</p>
-            </div>
+          <div className="text-center mb-5">
+            <h2 className="section-title fade-in-section">Our Foundation</h2>
+            <p className="section-subtitle fade-in-section">Building the Detective Conan community in the Philippines</p>
           </div>
-          <div className="row g-4">
-            <div className="col-md-4">
-              <div className="vmg-card h-100 slide-in-left">
-                <div className="vmg-icon">
-                  <i className="bi bi-eye"></i>
-                </div>
-                <h3>Vision</h3>
-                <p>To be the premier Detective Conan community in the Philippines, fostering appreciation for the series and connecting fans nationwide.</p>
+          <div className="vmg-horizontal-grid">
+            <div className="vmg-card-horizontal">
+              <div className="vmg-icon">
+                <i className="bi bi-eye"></i>
               </div>
+              <h3>Vision</h3>
+              <p>To be the premier Detective Conan community in the Philippines, fostering appreciation for the series and connecting fans nationwide.</p>
             </div>
-            <div className="col-md-4">
-              <div className="vmg-card h-100 scale-in">
-                <div className="vmg-icon">
-                  <i className="bi bi-bullseye"></i>
-                </div>
-                <h3>Mission</h3>
-                <p>Creating engaging experiences, organizing events, and providing a platform for fans to share their passion for Detective Conan.</p>
+            <div className="vmg-card-horizontal featured">
+              <div className="vmg-icon">
+                <i className="bi bi-bullseye"></i>
               </div>
+              <h3>Mission</h3>
+              <p>Creating engaging experiences, organizing events, and providing a platform for fans to share their passion for Detective Conan.</p>
             </div>
-            <div className="col-md-4">
-              <div className="vmg-card h-100 slide-in-right">
-                <div className="vmg-icon">
-                  <i className="bi bi-trophy"></i>
-                </div>
-                <h3>Goals</h3>
-                <p>Expand our community, promote Detective Conan culture, and create memorable experiences for all Filipino fans.</p>
+            <div className="vmg-card-horizontal">
+              <div className="vmg-icon">
+                <i className="bi bi-trophy"></i>
               </div>
+              <h3>Goals</h3>
+              <p>Expand our community, promote Detective Conan culture, and create memorable experiences for all Filipino fans.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Movie Section */}
-      <section className="movie-section py-5">
-        <div className="container">
-          <div className="row align-items-center">
-            <div className="col-lg-6 mb-4 mb-lg-0">
-              <div className="movie-content slide-in-left">
-                <h2 className="movie-title mb-4 fade-in-section">
-                  🎬 <span className="text-primary">Detective Conan Movie 28</span>
-                </h2>
-                <h3 className="movie-subtitle mb-4 fade-in-section">One-Eyed Flashback</h3>
-                <p className="movie-description mb-4 fade-in-section">
-                  Get ready for the most thrilling Detective Conan movie yet! Join the DCPH community for an exclusive
-                  <strong> Block Screening of One-Eyed Flashback</strong>. Experience the mystery, excitement, and
-                  camaraderie with fellow Detective Conan fans across the Philippines.
-                </p>
-                <div className="movie-highlights">
-                  <div className="highlight-item stagger-animation">
-                    <i className="bi bi-calendar-event text-primary me-3"></i>
-                    <span>DCPH Block Screening Event</span>
-                  </div>
-                  <div className="highlight-item stagger-animation">
-                    <i className="bi bi-people-fill text-primary me-3"></i>
-                    <span>Community Exclusive Experience</span>
-                  </div>
-                  <div className="highlight-item stagger-animation">
-                    <i className="bi bi-film text-primary me-3"></i>
-                    <span>Latest Detective Conan Movie</span>
-                  </div>
-                  <div className="highlight-item stagger-animation">
-                    <i className="bi bi-heart-fill text-primary me-3"></i>
-                    <span>Made for Filipino DC Fans</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-lg-6">
-              <div className="movie-video slide-in-right">
-                <div className="video-container">
-                  <iframe
-                    src="https://www.youtube.com/embed/p6h57WqRRl8"
-                    title="Detective Conan Movie 28 - One-Eyed Flashback Trailer"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  ></iframe>
-                </div>
-                <div className="video-caption mt-3 text-center fade-in-section">
-                  <p className="mb-0"><strong>Official Trailer</strong> - Detective Conan Movie 28: One-Eyed Flashback</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Community Links Section */}
       <section className="community-section py-5">
