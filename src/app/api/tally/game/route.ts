@@ -40,23 +40,23 @@ export async function POST(request: NextRequest) {
         await connectDB();
         const data = await request.json();
 
-        // Find active game or create new one
-        let game = await TallyGame.findOne({ isActive: true }).sort({ updatedAt: -1 });
+        // Build update object
+        const updateData: Record<string, unknown> = {};
 
-        if (!game) {
-            game = new TallyGame({ isActive: true });
-        }
+        if (data.config) updateData.config = data.config;
+        if (data.questionNumber !== undefined) updateData.questionNumber = data.questionNumber;
+        if (data.topic !== undefined) updateData.topic = data.topic;
+        if (data.participants) updateData.participants = new Map(Object.entries(data.participants));
+        if (data.questionEntries) updateData.questionEntries = new Map(Object.entries(data.questionEntries));
+        if (data.questionAnswers) updateData.questionAnswers = new Map(Object.entries(data.questionAnswers));
+        if (data.scoreHistory) updateData.scoreHistory = data.scoreHistory;
 
-        // Update fields
-        if (data.config) game.config = data.config;
-        if (data.questionNumber !== undefined) game.questionNumber = data.questionNumber;
-        if (data.topic !== undefined) game.topic = data.topic;
-        if (data.participants) game.participants = new Map(Object.entries(data.participants));
-        if (data.questionEntries) game.questionEntries = new Map(Object.entries(data.questionEntries));
-        if (data.questionAnswers) game.questionAnswers = new Map(Object.entries(data.questionAnswers));
-        if (data.scoreHistory) game.scoreHistory = data.scoreHistory;
-
-        await game.save();
+        // Use findOneAndUpdate to avoid version conflicts
+        const game = await TallyGame.findOneAndUpdate(
+            { isActive: true },
+            { $set: updateData },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
 
         return NextResponse.json({ success: true, id: game._id });
     } catch (error) {

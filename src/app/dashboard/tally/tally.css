@@ -840,14 +840,28 @@
 /* History Modal */
 .history-modal {
     background: #2A2A2A;
-    border-radius: 16px;
+    border-radius: 20px;
     width: 90%;
-    max-width: 600px;
+    max-width: 560px;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
     overflow: hidden;
+}
+
+.history-modal .modal-header {
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid #3A3A3A;
+}
+
+.history-modal .modal-header h2 {
+    font-size: 1.3rem;
+    color: #FFFFFF;
+}
+
+.history-modal .modal-header svg {
+    color: #FFFFFF;
 }
 
 .history-modal .modal-body {
@@ -856,12 +870,17 @@
     padding: 0 !important;
 }
 
+.history-modal .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #3A3A3A;
+}
+
 .empty-history {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px 24px;
+    padding: 80px 24px;
     color: #666;
 }
 
@@ -881,9 +900,10 @@
 }
 
 .history-item {
-    padding: 16px 24px;
+    padding: 20px 24px;
     border-bottom: 1px solid #3A3A3A;
     transition: background 0.2s ease;
+    cursor: pointer;
 }
 
 .history-item:hover {
@@ -897,13 +917,13 @@
 .history-item-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
+    align-items: center;
+    margin-bottom: 14px;
 }
 
 .history-item-header h3 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: #E0E0E0;
 }
@@ -911,32 +931,190 @@
 .history-date {
     font-size: 0.8rem;
     color: #888;
+    background: #3A3A3A;
+    padding: 4px 10px;
+    border-radius: 6px;
 }
 
 .history-item-stats {
     display: flex;
-    gap: 16px;
+    gap: 20px;
     flex-wrap: wrap;
+    margin-bottom: 14px;
 }
 
 .history-item-stats .stat {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.85rem;
-    color: #888;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #999;
+    background: #333;
+    padding: 6px 12px;
+    border-radius: 8px;
 }
 
 .history-item-stats .stat svg {
-    color: #666;
+    color: #777;
 }
 
 .history-item-stats .stat.winner {
+    background: rgba(255, 215, 0, 0.1);
     color: #FFD700;
 }
 
 .history-item-stats .stat.winner svg {
     color: #FFD700;
+}
+
+.history-item-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    margin-top: 14px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #3b82f6;
+    transition: all 0.2s ease;
+}
+
+.history-item:hover .history-item-action {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #60a5fa;
+}
+
+/* Start Modal */
+.start-modal {
+    background: #2A2A2A;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.start-modal-header {
+    text-align: center;
+    padding: 40px 24px 30px;
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
+}
+
+.start-modal-header .start-icon {
+    color: #FFD700;
+    margin-bottom: 16px;
+}
+
+.start-modal-header h1 {
+    margin: 0 0 8px 0;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #E0E0E0;
+}
+
+.start-modal-header p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #888;
+}
+
+.start-modal-body {
+    padding: 8px 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.start-option {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: #333;
+    border: 1px solid #3A3A3A;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.start-option:hover {
+    background: #3A3A3A;
+    border-color: #4A4A4A;
+    transform: translateX(4px);
+}
+
+.start-option .option-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.start-option.continue .option-icon {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+    color: #10b981;
+}
+
+.start-option.new .option-icon {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
+    color: #3b82f6;
+}
+
+.start-option.history .option-icon {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.1));
+    color: #8b5cf6;
+}
+
+.start-option.settings .option-icon {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
+    color: #f59e0b;
+}
+
+.start-option .option-content {
+    flex: 1;
+}
+
+.start-option .option-content h3 {
+    margin: 0 0 4px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #E0E0E0;
+}
+
+.start-option .option-content p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.start-option>svg:last-child {
+    color: #555;
+    flex-shrink: 0;
+}
+
+.start-option:hover>svg:last-child {
+    color: #888;
 }
 
 /* Loading Overlay */

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import {
     Settings, ChevronLeft, ChevronRight, Plus, Copy, Trash2, Undo2,
     User, Users, Trophy, X, Save, Info, Clock, Power,
-    Sliders, History, Loader2
+    Sliders, History, Loader2, Play, RotateCcw
 } from 'lucide-react';
 import './tally.css';
 
@@ -96,6 +96,9 @@ export default function TallyPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: string } | null>(null);
+    const [showStartModal, setShowStartModal] = useState(true);
+    const [hasActiveSession, setHasActiveSession] = useState(false);
+    const [openedFromStart, setOpenedFromStart] = useState(false);
 
     // Temp settings for modal
     const [tempConfig, setTempConfig] = useState<ScoringConfig>(scoringConfig);
@@ -125,6 +128,9 @@ export default function TallyPage() {
                 if (response.ok) {
                     const data = await response.json();
                     if (data && data._id) {
+                        const hasData = Object.keys(data.participants || {}).length > 0 ||
+                            (data.questionNumber && data.questionNumber > 1);
+                        setHasActiveSession(hasData);
                         setParticipants(data.participants || {});
                         setQuestionEntries(data.questionEntries || {});
                         setQuestionAnswers(data.questionAnswers || {});
@@ -137,6 +143,8 @@ export default function TallyPage() {
                         }
                     }
                 }
+                // Load session history for start modal
+                await loadSessionHistory();
             } catch (error) {
                 console.error('Failed to load game state:', error);
             } finally {
@@ -536,8 +544,26 @@ ${formatText}`;
     const saveSettings = () => {
         setScoringConfig(tempConfig);
         localStorage.setItem('scoringConfig', JSON.stringify(tempConfig));
-        setShowPreferencesModal(false);
+        closePreferencesModal();
         showToast('Settings saved successfully!', 'success');
+    };
+
+    // Close preferences modal (return to start if needed)
+    const closePreferencesModal = () => {
+        setShowPreferencesModal(false);
+        if (openedFromStart) {
+            setShowStartModal(true);
+            setOpenedFromStart(false);
+        }
+    };
+
+    // Close history modal (return to start if needed)
+    const closeHistoryModal = () => {
+        setShowHistoryModal(false);
+        if (openedFromStart) {
+            setShowStartModal(true);
+            setOpenedFromStart(false);
+        }
     };
 
     // Load session history
@@ -561,6 +587,80 @@ ${formatText}`;
         setShowHistoryModal(true);
     };
 
+    // Load a historical session
+    const loadHistoricalSession = async (sessionId: string) => {
+        try {
+            setIsLoading(true);
+            const response = await fetch(`/api/tally/history/${sessionId}`);
+            if (response.ok) {
+                const data = await response.json();
+                // Load the historical data into current state
+                setParticipants(data.participants || {});
+                setQuestionEntries(data.questionEntries || {});
+                setQuestionAnswers(data.questionAnswers || {});
+                setScoreHistory(data.scoreHistory || []);
+                setQuestionNumber(data.questionNumber || 1);
+                setTopicInput(data.topic || '');
+                if (data.config) {
+                    setScoringConfig(prev => ({ ...prev, ...data.config }));
+                    setTempConfig(prev => ({ ...prev, ...data.config }));
+                }
+                setHasActiveSession(true);
+                setShowHistoryModal(false);
+                setShowStartModal(false);
+                showToast('Session loaded successfully!', 'success');
+
+                // Save loaded data as new active session
+                await fetch('/api/tally/game', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        config: data.config || scoringConfig,
+                        questionNumber: data.questionNumber || 1,
+                        topic: data.topic || '',
+                        participants: data.participants || {},
+                        questionEntries: data.questionEntries || {},
+                        questionAnswers: data.questionAnswers || {},
+                        scoreHistory: data.scoreHistory || []
+                    })
+                });
+            }
+        } catch (error) {
+            console.error('Failed to load historical session:', error);
+            showToast('Failed to load session', 'danger');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Start new session
+    const startNewSession = async () => {
+        try {
+            // End any existing session first
+            await fetch('/api/tally/game', { method: 'DELETE' });
+
+            // Reset local state
+            setParticipants({});
+            setQuestionEntries({});
+            setQuestionAnswers({});
+            setScoreHistory([]);
+            setQuestionNumber(1);
+            setTopicInput('');
+            setAnswerInput('');
+            setHasActiveSession(true);
+            setShowStartModal(false);
+
+            showToast('New session started!', 'success');
+        } catch (error) {
+            console.error('Failed to start new session:', error);
+        }
+    };
+
+    // Continue current session
+    const continueSession = () => {
+        setShowStartModal(false);
+    };
+
     // End session
     const endSession = async () => {
         if (confirm('Are you sure you want to end the session? This will save the session to history and start a new one.')) {
@@ -576,6 +676,11 @@ ${formatText}`;
                 setQuestionNumber(1);
                 setTopicInput('');
                 setAnswerInput('');
+                setHasActiveSession(false);
+
+                // Reload history and show start modal
+                await loadSessionHistory();
+                setShowStartModal(true);
 
                 showToast('Session ended and saved to history.', 'success');
             } catch (error) {
@@ -816,12 +921,12 @@ ${formatText}`;
 
             {/* Preferences Modal */}
             {showPreferencesModal && (
-                <div className="modal-overlay" onClick={() => setShowPreferencesModal(false)}>
+                <div className="modal-overlay" onClick={closePreferencesModal}>
                     <div className="preferences-modal" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <Sliders size={24} />
                             <h2>Scoring Preferences</h2>
-                            <button className="close-btn" onClick={() => setShowPreferencesModal(false)}>
+                            <button className="close-btn" onClick={closePreferencesModal}>
                                 <X size={24} />
                             </button>
                         </div>
@@ -989,7 +1094,7 @@ ${formatText}`;
                             </div>
                         </div>
                         <div className="modal-footer">
-                            <button className="btn btn-secondary" onClick={() => setShowPreferencesModal(false)}>
+                            <button className="btn btn-secondary" onClick={closePreferencesModal}>
                                 Cancel
                             </button>
                             <button className="btn btn-primary" onClick={saveSettings}>
@@ -1002,12 +1107,12 @@ ${formatText}`;
 
             {/* Session History Modal */}
             {showHistoryModal && (
-                <div className="modal-overlay" onClick={() => setShowHistoryModal(false)}>
+                <div className="modal-overlay" onClick={closeHistoryModal}>
                     <div className="history-modal" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <History size={24} />
                             <h2>Session History</h2>
-                            <button className="close-btn" onClick={() => setShowHistoryModal(false)}>
+                            <button className="close-btn" onClick={closeHistoryModal}>
                                 <X size={24} />
                             </button>
                         </div>
@@ -1020,7 +1125,7 @@ ${formatText}`;
                             ) : (
                                 <div className="history-list">
                                     {sessionHistory.map((session) => (
-                                        <div key={session._id} className="history-item">
+                                        <div key={session._id} className="history-item" onClick={() => loadHistoricalSession(session._id)}>
                                             <div className="history-item-header">
                                                 <h3>{session.topic || 'Quiz Session'}</h3>
                                                 <span className="history-date">
@@ -1041,14 +1146,75 @@ ${formatText}`;
                                                     <span>{session.winner} ({session.winnerScore} pts)</span>
                                                 </div>
                                             </div>
+                                            <div className="history-item-action">
+                                                <RotateCcw size={14} />
+                                                <span>Click to restore this session</span>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
                             )}
                         </div>
                         <div className="modal-footer">
-                            <button className="btn btn-secondary" onClick={() => setShowHistoryModal(false)}>
+                            <button className="btn btn-secondary" onClick={closeHistoryModal}>
                                 Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Start Modal */}
+            {showStartModal && !isLoading && (
+                <div className="modal-overlay">
+                    <div className="start-modal">
+                        <div className="start-modal-header">
+                            <Trophy size={48} className="start-icon" />
+                            <h1>DC Class Tally System</h1>
+                            <p>Quiz scoring made easy</p>
+                        </div>
+                        <div className="start-modal-body">
+                            {hasActiveSession && (
+                                <button className="start-option continue" onClick={continueSession}>
+                                    <div className="option-icon">
+                                        <Play size={24} />
+                                    </div>
+                                    <div className="option-content">
+                                        <h3>Continue Session</h3>
+                                        <p>Resume your current session in progress</p>
+                                    </div>
+                                    <ChevronRight size={20} />
+                                </button>
+                            )}
+                            <button className="start-option new" onClick={startNewSession}>
+                                <div className="option-icon">
+                                    <Plus size={24} />
+                                </div>
+                                <div className="option-content">
+                                    <h3>Start New Session</h3>
+                                    <p>Begin a fresh quiz session</p>
+                                </div>
+                                <ChevronRight size={20} />
+                            </button>
+                            <button className="start-option history" onClick={() => { setOpenedFromStart(true); setShowStartModal(false); setShowHistoryModal(true); }}>
+                                <div className="option-icon">
+                                    <History size={24} />
+                                </div>
+                                <div className="option-content">
+                                    <h3>Session History</h3>
+                                    <p>View or restore previous sessions ({sessionHistory.length})</p>
+                                </div>
+                                <ChevronRight size={20} />
+                            </button>
+                            <button className="start-option settings" onClick={() => { setOpenedFromStart(true); setShowStartModal(false); setShowPreferencesModal(true); setTempConfig(scoringConfig); }}>
+                                <div className="option-icon">
+                                    <Sliders size={24} />
+                                </div>
+                                <div className="option-content">
+                                    <h3>Preferences</h3>
+                                    <p>Configure scoring rules and formats</p>
+                                </div>
+                                <ChevronRight size={20} />
                             </button>
                         </div>
                     </div>
