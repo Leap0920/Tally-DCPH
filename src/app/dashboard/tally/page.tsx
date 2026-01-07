@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
-    Settings, Award, Users, Trophy, ChevronLeft, ChevronRight,
-    Plus, Copy, Trash2, Undo2, User, Hash, Calculator,
-    X, Save, Eye, Info, ListOrdered, Palette
+    Settings, ChevronLeft, ChevronRight, Plus, Copy, Trash2, Undo2,
+    User, Users, Trophy, X, Save, Info, Clock, Power,
+    Sliders, History
 } from 'lucide-react';
 import './tally.css';
 
@@ -12,6 +12,7 @@ import './tally.css';
 interface Participant {
     scores: number[];
     total: number;
+    avatar?: string;
 }
 
 interface ScoreHistoryItem {
@@ -61,7 +62,7 @@ export default function TallyPage() {
             autoPoints: false,
             pointValue: 4
         },
-        totalQuestions: 10,
+        totalQuestions: 20,
         formats: {
             nextFormat: "♪⁠┌⁠|⁠∵⁠|⁠┘⁠♪ＮＥＸＴ└⁠|⁠∵⁠|⁠┐⁠♪",
             endFormat: "♪⁠┌⁠|⁠∵⁠|⁠┘⁠♪ＥＮＤ└⁠|⁠∵⁠|⁠┐⁠♪"
@@ -77,11 +78,26 @@ export default function TallyPage() {
     const [participantInput, setParticipantInput] = useState('');
     const [topicInput, setTopicInput] = useState('');
     const [answerInput, setAnswerInput] = useState('');
-    const [showSettings, setShowSettings] = useState(false);
+    const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
+    const [showPreferencesModal, setShowPreferencesModal] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: string } | null>(null);
 
     // Temp settings for modal
     const [tempConfig, setTempConfig] = useState<ScoringConfig>(scoringConfig);
+
+    // Ref for dropdown
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setShowSettingsDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     // Load settings from localStorage
     useEffect(() => {
@@ -206,7 +222,7 @@ export default function TallyPage() {
             };
         });
 
-        showToast(`${name} scored ${points} points for Question ${questionNumber}!`, 'info');
+        showToast(`${name} scored ${points} points!`, 'info');
     };
 
     // Auto-assign points for special questions
@@ -214,7 +230,6 @@ export default function TallyPage() {
         const isFirstQuestion = questionNumber === 1;
         const isLastQuestion = scoringConfig.totalQuestions > 0 && questionNumber === scoringConfig.totalQuestions;
 
-        // Only auto-assign if the setting is enabled for that question type
         if ((isFirstQuestion && scoringConfig.firstQuestion.autoPoints) ||
             (isLastQuestion && scoringConfig.lastQuestion.autoPoints)) {
 
@@ -223,12 +238,10 @@ export default function TallyPage() {
                 ? scoringConfig.firstQuestion.pointValue
                 : scoringConfig.lastQuestion.pointValue;
 
-            // Find participants who haven't answered yet
             const participantsToAssign = Object.keys(participants).filter(name => !currentEntries.includes(name));
 
             if (participantsToAssign.length === 0) return;
 
-            // Update all states together for participants who haven't answered
             setQuestionEntries(prev => ({
                 ...prev,
                 [questionNumber]: [...(prev[questionNumber] || []), ...participantsToAssign]
@@ -316,7 +329,6 @@ export default function TallyPage() {
 
         const lastAction = historyForQuestion[historyForQuestion.length - 1];
 
-        // Remove from score history
         setScoreHistory(prev => {
             const newHistory = [...prev];
             const index = newHistory.findLastIndex(h =>
@@ -326,7 +338,6 @@ export default function TallyPage() {
             return newHistory;
         });
 
-        // Remove from question entries
         setQuestionEntries(prev => {
             const entries = [...(prev[questionNumber] || [])];
             const index = entries.indexOf(lastAction.name);
@@ -334,7 +345,6 @@ export default function TallyPage() {
             return { ...prev, [questionNumber]: entries };
         });
 
-        // Revert participant score
         setParticipants(prev => {
             const participant = prev[lastAction.name];
             if (!participant) return prev;
@@ -376,9 +386,14 @@ export default function TallyPage() {
             const sortedParticipants = Object.entries(participants)
                 .sort((a, b) => b[1].total - a[1].total);
 
-            totalScoresSection = `\n\nFinal Scores:\n${sortedParticipants.map(([name, data], index) =>
-                `${index + 1}. ${name}: ${data.total} points`
-            ).join('\n')}`;
+            totalScoresSection = `\n\nFinal Scores:\n${sortedParticipants.map(([name, data], index) => {
+                let rankEmoji = '';
+                if (index === 0) rankEmoji = '🥇';
+                else if (index === 1) rankEmoji = '🥈';
+                else if (index === 2) rankEmoji = '🥉';
+                else rankEmoji = `${index + 1}.`;
+                return `${rankEmoji} ${name}: ${data.total} points`;
+            }).join('\n')}`;
         }
 
         const formattedOutput = `${topic}
@@ -428,37 +443,22 @@ ${formatText}`;
     const saveSettings = () => {
         setScoringConfig(tempConfig);
         localStorage.setItem('scoringConfig', JSON.stringify(tempConfig));
-        setShowSettings(false);
+        setShowPreferencesModal(false);
         showToast('Settings saved successfully!', 'success');
     };
 
-    // Get rank badge
-    const getRankBadge = (rank: number) => {
-        switch (rank) {
-            case 1:
-                return <span className="rank-badge rank-1">🥇 {rank}</span>;
-            case 2:
-                return <span className="rank-badge rank-2">🥈 {rank}</span>;
-            case 3:
-                return <span className="rank-badge rank-3">🥉 {rank}</span>;
-            default:
-                return <span className="rank-badge rank-default">{rank}</span>;
+    // End session
+    const endSession = () => {
+        if (confirm('Are you sure you want to end the session? This will clear all data.')) {
+            setParticipants({});
+            setQuestionEntries({});
+            setQuestionAnswers({});
+            setScoreHistory([]);
+            setQuestionNumber(1);
+            setTopicInput('');
+            setAnswerInput('');
+            showToast('Session ended. All data cleared.', 'info');
         }
-    };
-
-    // Get question mode text
-    const getQuestionModeText = () => {
-        const isFirstQuestion = questionNumber === 1;
-        const isLastQuestion = scoringConfig.totalQuestions > 0 && questionNumber === scoringConfig.totalQuestions;
-
-        if (isFirstQuestion && scoringConfig.firstQuestion.autoPoints) {
-            return <span className="mode-badge mode-modified">Modified Mode</span>;
-        } else if (isLastQuestion && scoringConfig.lastQuestion.autoPoints) {
-            return <span className="mode-badge mode-modified">Modified Mode</span>;
-        } else if (isFirstQuestion || isLastQuestion) {
-            return <span className="mode-badge mode-original">Original Mode</span>;
-        }
-        return null; // No badge for middle questions
     };
 
     // Sorted participants for display
@@ -478,37 +478,48 @@ ${formatText}`;
 
             {/* Header */}
             <header className="tally-header">
-                <div className="header-content">
-                    <div className="header-title">
-                        <Award size={28} className="header-icon" />
-                        <div>
-                            <span className="header-label">Tally System</span>
-                            <h1 className="header-main">Quiz <span className="text-gradient">Scoring</span></h1>
-                        </div>
-                    </div>
-                    <button className="settings-btn" onClick={() => { setTempConfig(scoringConfig); setShowSettings(true); }}>
-                        <Settings size={20} />
+                <div className="header-left">
+                    <span className="header-label">TALLY SYSTEM</span>
+                    <h1 className="header-title">DC <span className="text-gradient">Class</span></h1>
+                </div>
+                <div className="header-right" ref={dropdownRef}>
+                    <button
+                        className="settings-btn"
+                        onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
+                    >
+                        <Settings size={18} />
                         <span>Settings</span>
                     </button>
+                    {showSettingsDropdown && (
+                        <div className="settings-dropdown">
+                            <button onClick={() => { setShowPreferencesModal(true); setShowSettingsDropdown(false); setTempConfig(scoringConfig); }}>
+                                <Sliders size={16} />
+                                <span>Preferences</span>
+                            </button>
+                            <button onClick={() => { showToast('Session history feature coming soon!', 'info'); setShowSettingsDropdown(false); }}>
+                                <History size={16} />
+                                <span>Session History</span>
+                            </button>
+                            <button className="danger" onClick={() => { endSession(); setShowSettingsDropdown(false); }}>
+                                <Power size={16} />
+                                <span>End Session</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
             </header>
 
             {/* Question Number Display */}
             <div className="question-display">
-                <div className="question-info">
-                    <Info size={18} />
-                    <strong>Question <span className="question-number">{questionNumber}</span>
-                        {scoringConfig.totalQuestions > 0 && <span className="question-total"> / {scoringConfig.totalQuestions}</span>}
-                    </strong>
-                    {getQuestionModeText()}
-                </div>
+                <Info size={18} />
+                <span>Question <strong>{questionNumber}</strong> <span className="question-total">/ {scoringConfig.totalQuestions}</span></span>
             </div>
 
             {/* Control Panel */}
             <div className="control-panel">
                 <div className="control-inputs">
                     <div className="input-group">
-                        <label>Topic</label>
+                        <label>TOPIC</label>
                         <input
                             type="text"
                             value={topicInput}
@@ -518,7 +529,7 @@ ${formatText}`;
                         />
                     </div>
                     <div className="input-group">
-                        <label>Answer</label>
+                        <label>ANSWER</label>
                         <input
                             type="text"
                             value={answerInput}
@@ -528,7 +539,7 @@ ${formatText}`;
                         />
                     </div>
                     <div className="input-group">
-                        <label>Add Participant</label>
+                        <label>ADD PARTICIPANT</label>
                         <div className="input-with-button">
                             <input
                                 type="text"
@@ -538,7 +549,7 @@ ${formatText}`;
                                 placeholder="Enter name"
                                 className="tally-input"
                             />
-                            <button className="btn btn-add" onClick={addParticipant}>
+                            <button className="btn-add" onClick={addParticipant}>
                                 <Plus size={18} />
                             </button>
                         </div>
@@ -546,19 +557,19 @@ ${formatText}`;
                 </div>
                 <div className="control-buttons">
                     <button className="btn btn-secondary" onClick={previousQuestion}>
-                        <ChevronLeft size={18} /> Previous
+                        <ChevronLeft size={16} /> Previous
                     </button>
-                    <button className="btn btn-success" onClick={nextQuestion}>
-                        Next <ChevronRight size={18} />
+                    <button className="btn btn-primary" onClick={nextQuestion}>
+                        Next <ChevronRight size={16} />
                     </button>
                     <button className="btn btn-info" onClick={copyRecords}>
-                        <Copy size={18} /> Copy
+                        <Copy size={16} /> Copy
                     </button>
                     <button className="btn btn-danger" onClick={deleteParticipant}>
-                        <Trash2 size={18} /> Delete
+                        <Trash2 size={16} /> Delete
                     </button>
                     <button className="btn btn-warning" onClick={undoDelete}>
-                        <Undo2 size={18} /> Undo
+                        <Undo2 size={16} /> Undo
                     </button>
                 </div>
             </div>
@@ -568,14 +579,14 @@ ${formatText}`;
                 {/* Participants Panel */}
                 <div className="participants-panel">
                     <div className="panel-header">
-                        <Users size={20} />
-                        <h3>Participants</h3>
+                        <Users size={18} />
+                        <span>Participants</span>
                         <span className="count-badge">{Object.keys(participants).length}</span>
                     </div>
                     <div className="participants-list">
                         {Object.keys(participants).length === 0 ? (
                             <div className="empty-state">
-                                <User size={32} />
+                                <User size={40} className="empty-icon" />
                                 <p>No participants yet</p>
                             </div>
                         ) : (
@@ -586,7 +597,7 @@ ${formatText}`;
                                     onClick={() => addToRound(name)}
                                 >
                                     <User size={16} />
-                                    {name}
+                                    <span>{name}</span>
                                     {currentEntries.includes(name) && <span className="check">✓</span>}
                                 </button>
                             ))
@@ -596,331 +607,269 @@ ${formatText}`;
 
                 {/* Leaderboard Panel */}
                 <div className="leaderboard-panel">
-                    <div className="panel-header">
-                        <Trophy size={20} />
-                        <h3>Leaderboard</h3>
+                    <div className="panel-header leaderboard-header">
+                        <Trophy size={18} />
+                        <span>Leaderboard</span>
                     </div>
-                    <div className="leaderboard-table-wrapper">
-                        <table className="leaderboard-table">
-                            <thead>
-                                <tr>
-                                    <th><Hash size={14} /> Rank</th>
-                                    <th><User size={14} /> Participant</th>
-                                    <th><Calculator size={14} /> Score Breakdown</th>
-                                    <th><Award size={14} /> Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {sortedParticipants.length === 0 ? (
+                    <div className="leaderboard-content">
+                        {sortedParticipants.length === 0 ? (
+                            <div className="empty-state">
+                                <Trophy size={40} className="empty-icon" />
+                                <p>Add participants to start scoring</p>
+                            </div>
+                        ) : (
+                            <table className="leaderboard-table">
+                                <thead>
                                     <tr>
-                                        <td colSpan={4} className="empty-table">
-                                            Add participants to start scoring
-                                        </td>
+                                        <th># RANK</th>
+                                        <th><User size={12} /> PARTICIPANT</th>
+                                        <th><Clock size={12} /> SCORE BREAKDOWN</th>
+                                        <th><Trophy size={12} /> TOTAL</th>
                                     </tr>
-                                ) : (
-                                    sortedParticipants.map(([name, data], index) => {
+                                </thead>
+                                <tbody>
+                                    {sortedParticipants.map(([name, data], index) => {
                                         const maxQuestions = Math.max(
                                             questionNumber,
                                             ...Object.keys(questionEntries).map(Number)
                                         );
-                                        const scoreBreakdown = [];
 
+                                        // Build score badges
+                                        const scoreBadges = [];
                                         for (let i = 1; i <= maxQuestions; i++) {
                                             const score = data.scores[i - 1];
-                                            if (i === questionNumber) {
-                                                scoreBreakdown.push(
-                                                    <span key={i} className="score-current">{score || 0}</span>
+                                            if (score && score > 0) {
+                                                const isPositive = score > 0;
+                                                scoreBadges.push(
+                                                    <span
+                                                        key={i}
+                                                        className={`score-badge ${isPositive ? 'positive' : 'negative'}`}
+                                                    >
+                                                        {isPositive ? '+' : ''}{score}
+                                                    </span>
                                                 );
-                                            } else if (score && score > 0) {
-                                                scoreBreakdown.push(<span key={i}>{score}</span>);
-                                            } else {
-                                                scoreBreakdown.push(<span key={i} className="score-blank">-</span>);
-                                            }
-                                            if (i < maxQuestions) {
-                                                scoreBreakdown.push(<span key={`sep-${i}`} className="score-sep">+</span>);
                                             }
                                         }
 
+                                        const rank = index + 1;
+                                        const rankClass = rank <= 3 ? `rank-${rank}` : '';
+
                                         return (
                                             <tr key={name}>
-                                                <td>{getRankBadge(index + 1)}</td>
-                                                <td className="participant-name">{name}</td>
-                                                <td className="score-breakdown">{scoreBreakdown}</td>
-                                                <td><span className="total-score">{data.total}</span></td>
+                                                <td className="rank-cell">
+                                                    <span className={`rank-number ${rankClass}`}>{rank}</span>
+                                                </td>
+                                                <td>
+                                                    <div className="participant-cell">
+                                                        <div className="participant-avatar">
+                                                            <User size={16} />
+                                                        </div>
+                                                        <span className="participant-name">{name}</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div className="score-breakdown-cell">
+                                                        {scoreBadges.length > 0 ? scoreBadges : <span className="no-scores">-</span>}
+                                                    </div>
+                                                </td>
+                                                <td className="total-cell">
+                                                    <span className={`total-score ${index === 0 ? 'first' : ''}`}>{data.total}</span>
+                                                </td>
                                             </tr>
                                         );
-                                    })
-                                )}
-                            </tbody>
-                        </table>
+                                    })}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Settings Modal */}
-            {showSettings && (
-                <div className="modal-overlay" onClick={() => setShowSettings(false)}>
-                    <div className="settings-modal" onClick={e => e.stopPropagation()}>
+            {/* Footer */}
+            <footer className="tally-footer">
+                © 2023 Detective Conan PH Tally System. All rights reserved.
+            </footer>
+
+            {/* Preferences Modal */}
+            {showPreferencesModal && (
+                <div className="modal-overlay" onClick={() => setShowPreferencesModal(false)}>
+                    <div className="preferences-modal" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
-                            <Settings size={24} />
-                            <h2>Scoring Configuration</h2>
-                            <button className="close-btn" onClick={() => setShowSettings(false)}>
+                            <Sliders size={24} />
+                            <h2>Scoring Preferences</h2>
+                            <button className="close-btn" onClick={() => setShowPreferencesModal(false)}>
                                 <X size={24} />
                             </button>
                         </div>
                         <div className="modal-body">
                             {/* First Question Settings */}
-                            <div className="settings-card">
-                                <div className="settings-card-header">
-                                    <span className="card-icon">1</span>
-                                    <h4>First Question Scoring Mode</h4>
-                                </div>
-                                <div className="settings-card-body">
-                                    <label className="checkbox-label">
-                                        <input
-                                            type="checkbox"
-                                            checked={tempConfig.firstQuestion.autoPoints}
-                                            onChange={e => setTempConfig(prev => ({
-                                                ...prev,
-                                                firstQuestion: { ...prev.firstQuestion, autoPoints: e.target.checked }
-                                            }))}
-                                        />
-                                        <span><strong>Modified Mode:</strong> Award points to all participants</span>
-                                    </label>
-                                    <div className="input-row">
-                                        <label>Points Value (Modified Mode)</label>
-                                        <input
-                                            type="number"
-                                            value={tempConfig.firstQuestion.pointValue}
-                                            onChange={e => setTempConfig(prev => ({
-                                                ...prev,
-                                                firstQuestion: { ...prev.firstQuestion, pointValue: parseInt(e.target.value) || 0 }
-                                            }))}
-                                            min="1"
-                                            max="10"
-                                            className="tally-input small"
-                                        />
-                                    </div>
+                            <div className="settings-section">
+                                <h3>First Question Scoring</h3>
+                                <label className="checkbox-row">
+                                    <input
+                                        type="checkbox"
+                                        checked={tempConfig.firstQuestion.autoPoints}
+                                        onChange={e => setTempConfig(prev => ({
+                                            ...prev,
+                                            firstQuestion: { ...prev.firstQuestion, autoPoints: e.target.checked }
+                                        }))}
+                                    />
+                                    <span>Auto-assign points to all participants</span>
+                                </label>
+                                <div className="input-row">
+                                    <label>Points Value</label>
+                                    <input
+                                        type="number"
+                                        value={tempConfig.firstQuestion.pointValue}
+                                        onChange={e => setTempConfig(prev => ({
+                                            ...prev,
+                                            firstQuestion: { ...prev.firstQuestion, pointValue: parseInt(e.target.value) || 0 }
+                                        }))}
+                                        min="1"
+                                        max="10"
+                                    />
                                 </div>
                             </div>
 
                             {/* Middle Questions Settings */}
-                            <div className="settings-card">
-                                <div className="settings-card-header">
-                                    <span className="card-icon">2</span>
-                                    <h4>Middle Questions (Standard Distribution)</h4>
-                                </div>
-                                <div className="settings-card-body">
-                                    <div className="info-alert">
-                                        <Info size={16} />
-                                        <span><strong>Performance-based scoring:</strong> Points awarded based on answer speed/accuracy ranking</span>
+                            <div className="settings-section">
+                                <h3>Standard Point Distribution</h3>
+                                <div className="points-grid">
+                                    <div className="input-row">
+                                        <label>1st Place</label>
+                                        <input
+                                            type="number"
+                                            value={tempConfig.middleQuestions.firstPlace}
+                                            onChange={e => setTempConfig(prev => ({
+                                                ...prev,
+                                                middleQuestions: { ...prev.middleQuestions, firstPlace: parseInt(e.target.value) || 0 }
+                                            }))}
+                                            min="1"
+                                            max="10"
+                                        />
                                     </div>
-                                    <div className="points-grid">
-                                        <div className="input-row">
-                                            <label>1st Place</label>
-                                            <input
-                                                type="number"
-                                                value={tempConfig.middleQuestions.firstPlace}
-                                                onChange={e => setTempConfig(prev => ({
-                                                    ...prev,
-                                                    middleQuestions: { ...prev.middleQuestions, firstPlace: parseInt(e.target.value) || 0 }
-                                                }))}
-                                                min="1"
-                                                max="10"
-                                                className="tally-input small"
-                                            />
-                                        </div>
-                                        <div className="input-row">
-                                            <label>2nd Place</label>
-                                            <input
-                                                type="number"
-                                                value={tempConfig.middleQuestions.secondPlace}
-                                                onChange={e => setTempConfig(prev => ({
-                                                    ...prev,
-                                                    middleQuestions: { ...prev.middleQuestions, secondPlace: parseInt(e.target.value) || 0 }
-                                                }))}
-                                                min="1"
-                                                max="10"
-                                                className="tally-input small"
-                                            />
-                                        </div>
-                                        <div className="input-row">
-                                            <label>3rd Place</label>
-                                            <input
-                                                type="number"
-                                                value={tempConfig.middleQuestions.thirdPlace}
-                                                onChange={e => setTempConfig(prev => ({
-                                                    ...prev,
-                                                    middleQuestions: { ...prev.middleQuestions, thirdPlace: parseInt(e.target.value) || 0 }
-                                                }))}
-                                                min="1"
-                                                max="10"
-                                                className="tally-input small"
-                                            />
-                                        </div>
-                                        <div className="input-row">
-                                            <label>Others</label>
-                                            <input
-                                                type="number"
-                                                value={tempConfig.middleQuestions.otherPlace}
-                                                onChange={e => setTempConfig(prev => ({
-                                                    ...prev,
-                                                    middleQuestions: { ...prev.middleQuestions, otherPlace: parseInt(e.target.value) || 0 }
-                                                }))}
-                                                min="1"
-                                                max="10"
-                                                className="tally-input small"
-                                            />
-                                        </div>
+                                    <div className="input-row">
+                                        <label>2nd Place</label>
+                                        <input
+                                            type="number"
+                                            value={tempConfig.middleQuestions.secondPlace}
+                                            onChange={e => setTempConfig(prev => ({
+                                                ...prev,
+                                                middleQuestions: { ...prev.middleQuestions, secondPlace: parseInt(e.target.value) || 0 }
+                                            }))}
+                                            min="1"
+                                            max="10"
+                                        />
+                                    </div>
+                                    <div className="input-row">
+                                        <label>3rd Place</label>
+                                        <input
+                                            type="number"
+                                            value={tempConfig.middleQuestions.thirdPlace}
+                                            onChange={e => setTempConfig(prev => ({
+                                                ...prev,
+                                                middleQuestions: { ...prev.middleQuestions, thirdPlace: parseInt(e.target.value) || 0 }
+                                            }))}
+                                            min="1"
+                                            max="10"
+                                        />
+                                    </div>
+                                    <div className="input-row">
+                                        <label>Others</label>
+                                        <input
+                                            type="number"
+                                            value={tempConfig.middleQuestions.otherPlace}
+                                            onChange={e => setTempConfig(prev => ({
+                                                ...prev,
+                                                middleQuestions: { ...prev.middleQuestions, otherPlace: parseInt(e.target.value) || 0 }
+                                            }))}
+                                            min="1"
+                                            max="10"
+                                        />
                                     </div>
                                 </div>
                             </div>
 
                             {/* Last Question Settings */}
-                            <div className="settings-card">
-                                <div className="settings-card-header">
-                                    <span className="card-icon">★</span>
-                                    <h4>Last Question Scoring Mode</h4>
-                                </div>
-                                <div className="settings-card-body">
-                                    <label className="checkbox-label">
-                                        <input
-                                            type="checkbox"
-                                            checked={tempConfig.lastQuestion.autoPoints}
-                                            onChange={e => setTempConfig(prev => ({
-                                                ...prev,
-                                                lastQuestion: { ...prev.lastQuestion, autoPoints: e.target.checked }
-                                            }))}
-                                        />
-                                        <span><strong>Modified Mode:</strong> Award points to all participants</span>
-                                    </label>
-                                    <div className="input-row">
-                                        <label>Points Value (Modified Mode)</label>
-                                        <input
-                                            type="number"
-                                            value={tempConfig.lastQuestion.pointValue}
-                                            onChange={e => setTempConfig(prev => ({
-                                                ...prev,
-                                                lastQuestion: { ...prev.lastQuestion, pointValue: parseInt(e.target.value) || 0 }
-                                            }))}
-                                            min="1"
-                                            max="10"
-                                            className="tally-input small"
-                                        />
-                                    </div>
+                            <div className="settings-section">
+                                <h3>Last Question Scoring</h3>
+                                <label className="checkbox-row">
+                                    <input
+                                        type="checkbox"
+                                        checked={tempConfig.lastQuestion.autoPoints}
+                                        onChange={e => setTempConfig(prev => ({
+                                            ...prev,
+                                            lastQuestion: { ...prev.lastQuestion, autoPoints: e.target.checked }
+                                        }))}
+                                    />
+                                    <span>Auto-assign points to all participants</span>
+                                </label>
+                                <div className="input-row">
+                                    <label>Points Value</label>
+                                    <input
+                                        type="number"
+                                        value={tempConfig.lastQuestion.pointValue}
+                                        onChange={e => setTempConfig(prev => ({
+                                            ...prev,
+                                            lastQuestion: { ...prev.lastQuestion, pointValue: parseInt(e.target.value) || 0 }
+                                        }))}
+                                        min="1"
+                                        max="10"
+                                    />
                                 </div>
                             </div>
 
                             {/* Quiz Configuration */}
-                            <div className="settings-card">
-                                <div className="settings-card-header">
-                                    <ListOrdered size={18} />
-                                    <h4>Quiz Configuration</h4>
-                                </div>
-                                <div className="settings-card-body">
-                                    <div className="input-row">
-                                        <label>Total Number of Questions</label>
-                                        <input
-                                            type="number"
-                                            value={tempConfig.totalQuestions}
-                                            onChange={e => setTempConfig(prev => ({
-                                                ...prev,
-                                                totalQuestions: parseInt(e.target.value) || 0
-                                            }))}
-                                            min="0"
-                                            max="50"
-                                            className="tally-input small"
-                                        />
-                                    </div>
-                                    <p className="form-hint">Set to 0 for unlimited questions</p>
+                            <div className="settings-section">
+                                <h3>Quiz Configuration</h3>
+                                <div className="input-row">
+                                    <label>Total Questions</label>
+                                    <input
+                                        type="number"
+                                        value={tempConfig.totalQuestions}
+                                        onChange={e => setTempConfig(prev => ({
+                                            ...prev,
+                                            totalQuestions: parseInt(e.target.value) || 0
+                                        }))}
+                                        min="0"
+                                        max="50"
+                                    />
                                 </div>
                             </div>
 
                             {/* Format Settings */}
-                            <div className="settings-card">
-                                <div className="settings-card-header">
-                                    <Palette size={18} />
-                                    <h4>Format Settings</h4>
+                            <div className="settings-section">
+                                <h3>Copy Format</h3>
+                                <div className="input-row full">
+                                    <label>Next Question Text</label>
+                                    <input
+                                        type="text"
+                                        value={tempConfig.formats.nextFormat}
+                                        onChange={e => setTempConfig(prev => ({
+                                            ...prev,
+                                            formats: { ...prev.formats, nextFormat: e.target.value }
+                                        }))}
+                                    />
                                 </div>
-                                <div className="settings-card-body">
-                                    <div className="input-row full">
-                                        <label>Next Question Format</label>
-                                        <input
-                                            type="text"
-                                            value={tempConfig.formats.nextFormat}
-                                            onChange={e => setTempConfig(prev => ({
-                                                ...prev,
-                                                formats: { ...prev.formats, nextFormat: e.target.value }
-                                            }))}
-                                            className="tally-input"
-                                        />
-                                    </div>
-                                    <div className="input-row full">
-                                        <label>End Quiz Format</label>
-                                        <input
-                                            type="text"
-                                            value={tempConfig.formats.endFormat}
-                                            onChange={e => setTempConfig(prev => ({
-                                                ...prev,
-                                                formats: { ...prev.formats, endFormat: e.target.value }
-                                            }))}
-                                            className="tally-input"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Preview Section */}
-                            <div className="settings-card preview-card">
-                                <div className="settings-card-header">
-                                    <Eye size={18} />
-                                    <h4>Current Scoring Configuration</h4>
-                                </div>
-                                <div className="settings-card-body">
-                                    <div className="preview-content">
-                                        <p>
-                                            <strong>Question 1:</strong>{' '}
-                                            {tempConfig.firstQuestion.autoPoints
-                                                ? `Modified Mode: ${tempConfig.firstQuestion.pointValue} points (all participants)`
-                                                : `Original Mode: ${tempConfig.middleQuestions.firstPlace}-${tempConfig.middleQuestions.secondPlace}-${tempConfig.middleQuestions.thirdPlace}-${tempConfig.middleQuestions.otherPlace} distribution`}
-                                        </p>
-                                        {tempConfig.totalQuestions > 2 && (
-                                            <p>
-                                                <strong>Questions 2-{tempConfig.totalQuestions - 1}:</strong>{' '}
-                                                Standard: {tempConfig.middleQuestions.firstPlace}-{tempConfig.middleQuestions.secondPlace}-{tempConfig.middleQuestions.thirdPlace}-{tempConfig.middleQuestions.otherPlace} points
-                                            </p>
-                                        )}
-                                        {tempConfig.totalQuestions >= 2 && (
-                                            <p>
-                                                <strong>Question {tempConfig.totalQuestions} (Last):</strong>{' '}
-                                                {tempConfig.lastQuestion.autoPoints
-                                                    ? `Modified Mode: ${tempConfig.lastQuestion.pointValue} points (all participants)`
-                                                    : `Original Mode: ${tempConfig.middleQuestions.firstPlace}-${tempConfig.middleQuestions.secondPlace}-${tempConfig.middleQuestions.thirdPlace}-${tempConfig.middleQuestions.otherPlace} distribution`}
-                                            </p>
-                                        )}
-                                        {tempConfig.totalQuestions === 0 && (
-                                            <p>
-                                                <strong>Unlimited Questions:</strong>{' '}
-                                                All questions use {tempConfig.middleQuestions.firstPlace}-{tempConfig.middleQuestions.secondPlace}-{tempConfig.middleQuestions.thirdPlace}-{tempConfig.middleQuestions.otherPlace} scoring
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="mode-explanation">
-                                        <h6>Mode Explanation:</h6>
-                                        <ul>
-                                            <li><strong>Original Mode:</strong> Performance-based scoring ({tempConfig.middleQuestions.firstPlace}-{tempConfig.middleQuestions.secondPlace}-{tempConfig.middleQuestions.thirdPlace}-{tempConfig.middleQuestions.otherPlace})</li>
-                                            <li><strong>Modified Mode:</strong> All participants receive the same points automatically</li>
-                                        </ul>
-                                    </div>
+                                <div className="input-row full">
+                                    <label>End Quiz Text</label>
+                                    <input
+                                        type="text"
+                                        value={tempConfig.formats.endFormat}
+                                        onChange={e => setTempConfig(prev => ({
+                                            ...prev,
+                                            formats: { ...prev.formats, endFormat: e.target.value }
+                                        }))}
+                                    />
                                 </div>
                             </div>
                         </div>
                         <div className="modal-footer">
-                            <button className="btn btn-secondary" onClick={() => setShowSettings(false)}>
+                            <button className="btn btn-secondary" onClick={() => setShowPreferencesModal(false)}>
                                 Cancel
                             </button>
                             <button className="btn btn-primary" onClick={saveSettings}>
-                                <Save size={18} /> Save Configuration
+                                <Save size={16} /> Save Changes
                             </button>
                         </div>
                     </div>
