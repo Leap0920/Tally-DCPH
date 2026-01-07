@@ -1,46 +1,59 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Home() {
   const carouselRef = useRef<HTMLDivElement>(null);
+  const [scrollY, setScrollY] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Scroll animations for VMG cards
+    // Page load animation
+    setIsLoaded(true);
+
+    // Parallax scroll effect
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Scroll animations for all animated elements
     const observerOptions = {
       threshold: 0.1,
       rootMargin: '0px 0px -50px 0px'
     };
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
+    const animateOnScroll = new IntersectionObserver((entries) => {
+      entries.forEach((entry, index) => {
         if (entry.isIntersecting) {
-          (entry.target as HTMLElement).style.opacity = '1';
-          (entry.target as HTMLElement).style.transform = 'translateY(0)';
+          // Add staggered delay based on element index
+          setTimeout(() => {
+            entry.target.classList.add('animate-visible');
+          }, index * 100);
         }
       });
     }, observerOptions);
 
-    document.querySelectorAll('.vmg-card').forEach(card => {
-      (card as HTMLElement).style.opacity = '0';
-      (card as HTMLElement).style.transform = 'translateY(30px)';
-      (card as HTMLElement).style.transition = 'all 0.6s ease';
-      observer.observe(card);
+    // Animate VMG cards with stagger
+    document.querySelectorAll('.vmg-card-horizontal').forEach((card, index) => {
+      card.classList.add('animate-on-scroll');
+      (card as HTMLElement).style.transitionDelay = `${index * 0.15}s`;
+      animateOnScroll.observe(card);
     });
 
-    // Fade-in sections on scroll
-    const fadeObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, { threshold: 0.1 });
+    // Animate section titles
+    document.querySelectorAll('.section-title, .section-subtitle, .community-title, .community-description').forEach(el => {
+      el.classList.add('animate-on-scroll');
+      animateOnScroll.observe(el);
+    });
 
-    document.querySelectorAll('.fade-in-section').forEach(el => {
-      fadeObserver.observe(el);
+    // Animate buttons with stagger
+    document.querySelectorAll('.social-links .btn').forEach((btn, index) => {
+      btn.classList.add('animate-on-scroll');
+      (btn as HTMLElement).style.transitionDelay = `${index * 0.1}s`;
+      animateOnScroll.observe(btn);
     });
 
     // Pause carousel on hover
@@ -57,8 +70,8 @@ export default function Home() {
     }
 
     return () => {
-      observer.disconnect();
-      fadeObserver.disconnect();
+      window.removeEventListener('scroll', handleScroll);
+      animateOnScroll.disconnect();
     };
   }, []);
 
@@ -77,32 +90,44 @@ export default function Home() {
   ];
 
   return (
-    <>
-      {/* Scroll Progress Bar */}
-      <div className="scroll-progress"></div>
+    <div className={`page-wrapper ${isLoaded ? 'page-loaded' : ''}`}>
+      {/* Animated Background Gradient */}
+      <div className="animated-bg"></div>
+
+      {/* Floating Particles - Fixed positions to avoid hydration mismatch */}
+      <div className="particles">
+        <div className="particle" style={{ left: '5%', animationDelay: '0s', animationDuration: '18s' }}></div>
+        <div className="particle" style={{ left: '15%', animationDelay: '2s', animationDuration: '22s' }}></div>
+        <div className="particle" style={{ left: '25%', animationDelay: '1s', animationDuration: '16s' }}></div>
+        <div className="particle" style={{ left: '35%', animationDelay: '3s', animationDuration: '20s' }}></div>
+        <div className="particle" style={{ left: '45%', animationDelay: '0.5s', animationDuration: '19s' }}></div>
+        <div className="particle" style={{ left: '55%', animationDelay: '2.5s', animationDuration: '17s' }}></div>
+        <div className="particle" style={{ left: '65%', animationDelay: '1.5s', animationDuration: '21s' }}></div>
+        <div className="particle" style={{ left: '75%', animationDelay: '4s', animationDuration: '18s' }}></div>
+        <div className="particle" style={{ left: '85%', animationDelay: '3.5s', animationDuration: '23s' }}></div>
+        <div className="particle" style={{ left: '95%', animationDelay: '0.8s', animationDuration: '16s' }}></div>
+        <div className="particle" style={{ left: '10%', animationDelay: '1.2s', animationDuration: '20s' }}></div>
+        <div className="particle" style={{ left: '30%', animationDelay: '2.8s', animationDuration: '17s' }}></div>
+        <div className="particle" style={{ left: '50%', animationDelay: '0.3s', animationDuration: '22s' }}></div>
+        <div className="particle" style={{ left: '70%', animationDelay: '3.2s', animationDuration: '19s' }}></div>
+        <div className="particle" style={{ left: '90%', animationDelay: '1.8s', animationDuration: '21s' }}></div>
+      </div>
 
       {/* Character Carousel Hero Section */}
-      <section className="character-carousel-section fade-in-section">
+      <section
+        className="character-carousel-section"
+        style={{ transform: `translateY(${scrollY * 0.3}px)` }}
+      >
         <div className="scroll-wrapper" ref={carouselRef}>
           <div className="scroll-track">
-            {/* First set of characters */}
-            {characters.map((char, i) => (
-              <div key={`first-${i}`} className="character-item stagger-animation">
-                <Image src={char.src} alt={char.name} fill className="character-image" priority={i < 3} />
+            {[...characters, ...characters].map((char, i) => (
+              <div key={i} className="character-item">
+                <Image src={char.src} alt={char.name} fill className="character-image" priority={i < 7} />
                 <div className="character-overlay">
                   <h3 className="character-name">{char.name}</h3>
                   <p className="character-position">{char.role}</p>
                 </div>
-              </div>
-            ))}
-            {/* Duplicate set for seamless infinite loop */}
-            {characters.map((char, i) => (
-              <div key={`second-${i}`} className="character-item stagger-animation">
-                <Image src={char.src} alt={char.name} fill className="character-image" />
-                <div className="character-overlay">
-                  <h3 className="character-name">{char.name}</h3>
-                  <p className="character-position">{char.role}</p>
-                </div>
+                <div className="character-glow"></div>
               </div>
             ))}
           </div>
@@ -111,42 +136,57 @@ export default function Home() {
 
       {/* Main Title Section */}
       <section className="main-title-section hero-title-section">
+        <div className="hero-bg-animation"></div>
         <div className="container">
-          <div className="row justify-content-center">
-            <div className="col-lg-10 text-center">
-              <div className="title-content">
-                <div className="badge-container mb-4 scale-in">
-                  <span className="badge bg-warning text-dark fs-6 px-4 py-2">🇵🇭 PHILIPPINES CHAPTER 🇵🇭</span>
-                </div>
-                <h1 className="main-title mb-4 fade-in-section">
-                  DETECTIVE CONAN PH: ANIME AND MANGA
-                </h1>
-                <p className="main-subtitle mb-5 fade-in-section">
-                  The leading and the largest organization of Detective Conan fans in the Philippines
-                </p>
-                <div className="main-buttons fade-in-section">
-                  <Link href="/login" className="btn btn-primary btn-lg me-3 mb-3 slide-in-left">
-                    <i className="bi bi-play-fill me-2"></i>Start Scoring
-                  </Link>
-                  <button className="btn btn-outline-light btn-lg mb-3 slide-in-right" onClick={scrollToFeatures}>
-                    <i className="bi bi-info-circle me-2"></i>Learn More
-                  </button>
-                </div>
-              </div>
+          <div className="title-content text-center">
+            <div className={`badge-container mb-4 ${isLoaded ? 'animate-pop' : ''}`}>
+              <span className="hero-badge-animated">🇵🇭 PHILIPPINES CHAPTER 🇵🇭</span>
+            </div>
+            <h1 className={`main-title-animated mb-4 ${isLoaded ? 'animate-title' : ''}`}>
+              <span className="title-word">DETECTIVE</span>{' '}
+              <span className="title-word">CONAN</span>{' '}
+              <span className="title-word title-highlight">PH</span>
+            </h1>
+            <p className={`main-subtitle-animated mb-5 ${isLoaded ? 'animate-fade-up' : ''}`}>
+              The leading and the largest organization of Detective Conan fans in the Philippines
+            </p>
+            <div className={`main-buttons ${isLoaded ? 'animate-fade-up-delay' : ''}`}>
+              <Link href="/login" className="btn-animated-primary">
+                <span className="btn-bg"></span>
+                <span className="btn-content">
+                  <i className="bi bi-box-arrow-in-right"></i> Start
+                </span>
+              </Link>
+              <button className="btn-animated-outline" onClick={scrollToFeatures}>
+                <span className="btn-content">
+                  <i className="bi bi-chevron-down"></i> Explore
+                </span>
+              </button>
             </div>
           </div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <div className="scroll-indicator">
+          <div className="scroll-mouse">
+            <div className="scroll-wheel"></div>
+          </div>
+          <span>Scroll to explore</span>
         </div>
       </section>
 
       {/* Vision Mission Goals Section - Horizontal */}
       <section id="features" className="vmg-section-horizontal">
+        <div className="section-bg-pattern"></div>
         <div className="container">
           <div className="text-center mb-5">
-            <h2 className="section-title fade-in-section">Our Foundation</h2>
-            <p className="section-subtitle fade-in-section">Building the Detective Conan community in the Philippines</p>
+            <span className="section-label">What We Stand For</span>
+            <h2 className="section-title">Our Foundation</h2>
+            <p className="section-subtitle">Building the Detective Conan community in the Philippines</p>
           </div>
           <div className="vmg-horizontal-grid">
             <div className="vmg-card-horizontal">
+              <div className="card-shine"></div>
               <div className="vmg-icon">
                 <i className="bi bi-eye"></i>
               </div>
@@ -154,6 +194,7 @@ export default function Home() {
               <p>To be the premier Detective Conan community in the Philippines, fostering appreciation for the series and connecting fans nationwide.</p>
             </div>
             <div className="vmg-card-horizontal featured">
+              <div className="card-shine"></div>
               <div className="vmg-icon">
                 <i className="bi bi-bullseye"></i>
               </div>
@@ -161,6 +202,7 @@ export default function Home() {
               <p>Creating engaging experiences, organizing events, and providing a platform for fans to share their passion for Detective Conan.</p>
             </div>
             <div className="vmg-card-horizontal">
+              <div className="card-shine"></div>
               <div className="vmg-icon">
                 <i className="bi bi-trophy"></i>
               </div>
@@ -171,68 +213,67 @@ export default function Home() {
         </div>
       </section>
 
-
       {/* Community Links Section */}
-      <section className="community-section py-5">
+      <section className="community-section-enhanced">
+        <div className="community-bg-glow"></div>
         <div className="container">
-          <div className="row">
-            <div className="col-12">
-              <div className="community-card text-center">
-                <div className="community-content">
-                  <h2 className="community-title mb-4 fade-in-section">Join Our DCPH Community!</h2>
-                  <p className="community-description mb-4 fade-in-section">
-                    Connect with thousands of Detective Conan fans across the Philippines through our official social media channels.
-                  </p>
-                  <div className="social-links">
-                    <a href="https://www.facebook.com/groups/dcphanimeandmanga" target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-lg me-3 mb-3 stagger-animation">
-                      <i className="bi bi-facebook me-2"></i>
-                      Facebook Group
-                    </a>
-                    <a href="https://www.facebook.com/search/top?q=detective%20conan%20ph%3A%20anime%20and%20manga" target="_blank" rel="noopener noreferrer" className="btn btn-info btn-lg me-3 mb-3 stagger-animation">
-                      <i className="bi bi-facebook me-2"></i>
-                      Facebook Page
-                    </a>
-                    <a href="https://www.instagram.com/conanph0304/?hl=en" target="_blank" rel="noopener noreferrer" className="btn btn-danger btn-lg me-3 mb-3 stagger-animation">
-                      <i className="bi bi-instagram me-2"></i>
-                      Instagram
-                    </a>
-                    <a href="https://x.com/conanph0304?lang=en" target="_blank" rel="noopener noreferrer" className="btn btn-dark btn-lg mb-3 stagger-animation">
-                      <i className="bi bi-twitter-x me-2"></i>
-                      X (Twitter)
-                    </a>
-                  </div>
-                  <div className="mt-4">
-                    <Link href="/login" className="btn btn-success btn-lg scale-in">
-                      <i className="bi bi-arrow-right-circle me-2"></i>
-                      Launch Tally System
-                    </Link>
-                  </div>
-                </div>
-              </div>
+          <div className="community-card-enhanced text-center">
+            <div className="community-icon-ring">
+              <i className="bi bi-people-fill"></i>
+            </div>
+            <h2 className="community-title">Join Our DCPH Community!</h2>
+            <p className="community-description">
+              Connect with thousands of Detective Conan fans across the Philippines through our official social media channels.
+            </p>
+            <div className="social-links-enhanced">
+              <a href="https://www.facebook.com/groups/dcphanimeandmanga" target="_blank" rel="noopener noreferrer" className="social-btn-enhanced facebook">
+                <i className="bi bi-facebook"></i>
+                <span>Facebook Group</span>
+              </a>
+              <a href="https://www.facebook.com/search/top?q=detective%20conan%20ph%3A%20anime%20and%20manga" target="_blank" rel="noopener noreferrer" className="social-btn-enhanced page">
+                <i className="bi bi-facebook"></i>
+                <span>Facebook Page</span>
+              </a>
+              <a href="https://www.instagram.com/conanph0304/?hl=en" target="_blank" rel="noopener noreferrer" className="social-btn-enhanced instagram">
+                <i className="bi bi-instagram"></i>
+                <span>Instagram</span>
+              </a>
+              <a href="https://x.com/conanph0304?lang=en" target="_blank" rel="noopener noreferrer" className="social-btn-enhanced twitter">
+                <i className="bi bi-twitter-x"></i>
+                <span>X (Twitter)</span>
+              </a>
+            </div>
+            <div className="cta-wrapper">
+              <Link href="/login" className="btn-cta-enhanced">
+                <span className="btn-glow"></span>
+                <span className="btn-text">
+                  <i className="bi bi-compass"></i> Explore the System
+                </span>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="footer py-4 fade-in-section">
+      <footer className="footer-enhanced">
         <div className="container">
-          <div className="row align-items-center">
-            <div className="col-md-6">
-              <p className="footer-text mb-0">
-                © 2025 DETECTIVE CONAN PH: Anime and Manga.
-              </p>
+          <div className="footer-content-enhanced">
+            <div className="footer-brand-enhanced">
+              <div className="footer-logo">DC<span>PH</span></div>
+              <p>Detective Conan PH: Anime and Manga</p>
             </div>
-            <div className="col-md-6 text-md-end">
-              <div className="footer-links">
-                <a href="#features" className="footer-link">About Us</a>
-                <span className="footer-divider">|</span>
-                <a href="#community" className="footer-link">Community</a>
-              </div>
+            <div className="footer-links-enhanced">
+              <a href="#features">About Us</a>
+              <a href="https://www.facebook.com/groups/dcphanimeandmanga" target="_blank" rel="noopener noreferrer">Community</a>
+              <Link href="/login">Tally System</Link>
             </div>
+          </div>
+          <div className="footer-bottom-enhanced">
+            <p>© 2025 DETECTIVE CONAN PH: Anime and Manga. Made with ❤️ by Filipino DC Fans.</p>
           </div>
         </div>
       </footer>
-    </>
+    </div>
   );
 }
