@@ -14,9 +14,9 @@ export default async function DashboardLayout({
     }
 
     return (
-        <div className="min-h-screen flex" style={{ background: 'var(--bg-color)' }}>
+        <div className="dashboard-layout">
             <Sidebar />
-            <main className="flex-1 ml-72 p-8 lg:p-10 overflow-y-auto min-h-screen" style={{ background: 'linear-gradient(180deg, #0D0D0D 0%, #0a0a0a 100%)' }}>
+            <main className="dashboard-main-wrapper">
                 {children}
             </main>
         </div>

@@ -1134,6 +1134,22 @@ html {
 
 /* ===== DASHBOARD SPECIFIC STYLES ===== */
 
+/* Dashboard Layout */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-color);
+}
+
+.dashboard-main-wrapper {
+  flex: 1;
+  margin-left: 18rem;
+  /* Same as sidebar width */
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0D0D0D 0%, #0a0a0a 100%);
+  overflow-x: hidden;
+}
+
 /* Sidebar Container */
 .sidebar-container {
   display: flex;
@@ -3640,6 +3656,12 @@ html {
 }
 
 /* Responsive Dashboard */
+@media (max-width: 1400px) {
+  .dashboard-content-grid {
+    grid-template-columns: 1fr 320px;
+  }
+}
+
 @media (max-width: 1200px) {
   .dashboard-content-grid {
     grid-template-columns: 1fr;
@@ -3650,6 +3672,15 @@ html {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
   }
+
+  /* Reduce sidebar width on medium screens */
+  .sidebar-container {
+    width: 15rem;
+  }
+
+  .dashboard-main-wrapper {
+    margin-left: 15rem;
+  }
 }
 
 @media (max-width: 992px) {
@@ -3659,6 +3690,45 @@ html {
 
   .sidebar-widgets {
     grid-template-columns: 1fr;
+  }
+
+  /* Further reduce sidebar on smaller screens */
+  .sidebar-container {
+    width: 4.5rem;
+  }
+
+  .dashboard-main-wrapper {
+    margin-left: 4.5rem;
+  }
+
+  /* Hide text in sidebar on tablet */
+  .sidebar-title,
+  .sidebar-subtitle,
+  .sidebar-nav-label,
+  .sidebar-nav-item span,
+  .sidebar-user-info,
+  .sidebar-logout span {
+    display: none;
+  }
+
+  .sidebar-header {
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .sidebar-nav-item {
+    justify-content: center;
+    padding: 0.75rem;
+  }
+
+  .sidebar-user-card {
+    justify-content: center;
+    padding: 0.75rem;
+  }
+
+  .sidebar-logout {
+    justify-content: center;
+    padding: 0.75rem;
   }
 }
 
@@ -3689,5 +3759,38 @@ html {
   .activity-points {
     width: 100%;
     margin-top: 0.5rem;
+  }
+
+  .stat-value-large {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+
+  /* Hide sidebar completely on mobile */
+  .sidebar-container {
+    transform: translateX(-100%);
+  }
+
+  .dashboard-main-wrapper {
+    margin-left: 0;
+  }
+
+  .dashboard-main {
+    padding: 1rem;
+  }
+
+  .dashboard-greeting {
+    font-size: 1.75rem;
+  }
+
+  .stat-value-large {
+    font-size: 2rem;
+  }
+
+  .version-badge {
+    font-size: 0.6rem;
+    padding: 0.4rem 0.75rem;
   }
 }
