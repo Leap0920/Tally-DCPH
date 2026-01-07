@@ -214,16 +214,58 @@ export default function TallyPage() {
         const isFirstQuestion = questionNumber === 1;
         const isLastQuestion = scoringConfig.totalQuestions > 0 && questionNumber === scoringConfig.totalQuestions;
 
+        // Only auto-assign if the setting is enabled for that question type
         if ((isFirstQuestion && scoringConfig.firstQuestion.autoPoints) ||
             (isLastQuestion && scoringConfig.lastQuestion.autoPoints)) {
 
             const currentEntries = questionEntries[questionNumber] || [];
+            const pointValue = isFirstQuestion
+                ? scoringConfig.firstQuestion.pointValue
+                : scoringConfig.lastQuestion.pointValue;
 
-            Object.keys(participants).forEach(name => {
-                if (!currentEntries.includes(name)) {
-                    addToRound(name);
-                }
+            // Find participants who haven't answered yet
+            const participantsToAssign = Object.keys(participants).filter(name => !currentEntries.includes(name));
+
+            if (participantsToAssign.length === 0) return;
+
+            // Update all states together for participants who haven't answered
+            setQuestionEntries(prev => ({
+                ...prev,
+                [questionNumber]: [...(prev[questionNumber] || []), ...participantsToAssign]
+            }));
+
+            setScoreHistory(prev => [
+                ...prev,
+                ...participantsToAssign.map(name => ({
+                    name,
+                    points: pointValue,
+                    previousTotal: participants[name]?.total || 0,
+                    questionNumber,
+                    position: currentEntries.length + participantsToAssign.indexOf(name)
+                }))
+            ]);
+
+            setParticipants(prev => {
+                const updated = { ...prev };
+                participantsToAssign.forEach(name => {
+                    const participant = updated[name];
+                    const newScores = [...participant.scores];
+
+                    while (newScores.length < questionNumber) {
+                        newScores.push(0);
+                    }
+
+                    newScores[questionNumber - 1] = pointValue;
+
+                    updated[name] = {
+                        scores: newScores,
+                        total: participant.total + pointValue
+                    };
+                });
+                return updated;
             });
+
+            showToast(`Auto-assigned ${pointValue} points to ${participantsToAssign.length} participant(s)!`, 'success');
         }
     };
 
@@ -413,8 +455,10 @@ ${formatText}`;
             return <span className="mode-badge mode-modified">Modified Mode</span>;
         } else if (isLastQuestion && scoringConfig.lastQuestion.autoPoints) {
             return <span className="mode-badge mode-modified">Modified Mode</span>;
+        } else if (isFirstQuestion || isLastQuestion) {
+            return <span className="mode-badge mode-original">Original Mode</span>;
         }
-        return <span className="mode-badge mode-original">Original Mode</span>;
+        return null; // No badge for middle questions
     };
 
     // Sorted participants for display
@@ -838,24 +882,34 @@ ${formatText}`;
                                             <strong>Question 1:</strong>{' '}
                                             {tempConfig.firstQuestion.autoPoints
                                                 ? `Modified Mode: ${tempConfig.firstQuestion.pointValue} points (all participants)`
-                                                : 'Original Mode: 4-2-2-1 distribution'}
+                                                : `Original Mode: ${tempConfig.middleQuestions.firstPlace}-${tempConfig.middleQuestions.secondPlace}-${tempConfig.middleQuestions.thirdPlace}-${tempConfig.middleQuestions.otherPlace} distribution`}
                                         </p>
-                                        <p>
-                                            <strong>Questions 2-{tempConfig.totalQuestions - 1}:</strong>{' '}
-                                            Standard: {tempConfig.middleQuestions.firstPlace}-{tempConfig.middleQuestions.secondPlace}-{tempConfig.middleQuestions.thirdPlace}-{tempConfig.middleQuestions.otherPlace} points
-                                        </p>
-                                        <p>
-                                            <strong>Question {tempConfig.totalQuestions}:</strong>{' '}
-                                            {tempConfig.lastQuestion.autoPoints
-                                                ? `Modified Mode: ${tempConfig.lastQuestion.pointValue} points (all participants)`
-                                                : 'Original Mode: 4-2-2-1 distribution'}
-                                        </p>
+                                        {tempConfig.totalQuestions > 2 && (
+                                            <p>
+                                                <strong>Questions 2-{tempConfig.totalQuestions - 1}:</strong>{' '}
+                                                Standard: {tempConfig.middleQuestions.firstPlace}-{tempConfig.middleQuestions.secondPlace}-{tempConfig.middleQuestions.thirdPlace}-{tempConfig.middleQuestions.otherPlace} points
+                                            </p>
+                                        )}
+                                        {tempConfig.totalQuestions >= 2 && (
+                                            <p>
+                                                <strong>Question {tempConfig.totalQuestions} (Last):</strong>{' '}
+                                                {tempConfig.lastQuestion.autoPoints
+                                                    ? `Modified Mode: ${tempConfig.lastQuestion.pointValue} points (all participants)`
+                                                    : `Original Mode: ${tempConfig.middleQuestions.firstPlace}-${tempConfig.middleQuestions.secondPlace}-${tempConfig.middleQuestions.thirdPlace}-${tempConfig.middleQuestions.otherPlace} distribution`}
+                                            </p>
+                                        )}
+                                        {tempConfig.totalQuestions === 0 && (
+                                            <p>
+                                                <strong>Unlimited Questions:</strong>{' '}
+                                                All questions use {tempConfig.middleQuestions.firstPlace}-{tempConfig.middleQuestions.secondPlace}-{tempConfig.middleQuestions.thirdPlace}-{tempConfig.middleQuestions.otherPlace} scoring
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="mode-explanation">
                                         <h6>Mode Explanation:</h6>
                                         <ul>
-                                            <li><strong>Original Mode:</strong> Traditional performance-based scoring (4-2-2-1)</li>
-                                            <li><strong>Modified Mode:</strong> Optional questions where all participants get full points</li>
+                                            <li><strong>Original Mode:</strong> Performance-based scoring ({tempConfig.middleQuestions.firstPlace}-{tempConfig.middleQuestions.secondPlace}-{tempConfig.middleQuestions.thirdPlace}-{tempConfig.middleQuestions.otherPlace})</li>
+                                            <li><strong>Modified Mode:</strong> All participants receive the same points automatically</li>
                                         </ul>
                                     </div>
                                 </div>
