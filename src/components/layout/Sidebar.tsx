@@ -22,7 +22,6 @@ const navItems = [
     { name: 'Stats', href: '/dashboard/stats', icon: BarChart3 },
     { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-    { name: 'Profile', href: '/dashboard/profile', icon: User },
 ];
 
 export default function Sidebar() {
@@ -36,9 +35,12 @@ export default function Sidebar() {
                 <div className="sidebar-logo">D</div>
                 <div>
                     <span className="sidebar-title">DCPH Tally</span>
-                    <span className="sidebar-subtitle">Scoring System</span>
+                    <span className="sidebar-subtitle">COMMAND CENTER</span>
                 </div>
             </div>
+
+            {/* Navigation Label */}
+            <div className="sidebar-nav-label">NAVIGATION MENU</div>
 
             {/* Navigation */}
             <nav className="sidebar-nav">
