@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import {
     Settings, ChevronLeft, ChevronRight, Plus, Copy, Trash2, Undo2,
     User, Users, Trophy, X, Save, Info, Clock, Power,
-    Sliders, History
+    Sliders, History, Loader2
 } from 'lucide-react';
 import './tally.css';
 
@@ -45,6 +45,17 @@ interface ScoringConfig {
     };
 }
 
+interface SessionHistoryItem {
+    _id: string;
+    topic: string;
+    totalQuestions: number;
+    participantCount: number;
+    winner: string;
+    winnerScore: number;
+    createdAt: string;
+    endedAt: string;
+}
+
 export default function TallyPage() {
     // Scoring Configuration
     const [scoringConfig, setScoringConfig] = useState<ScoringConfig>({
@@ -80,13 +91,19 @@ export default function TallyPage() {
     const [answerInput, setAnswerInput] = useState('');
     const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
     const [showPreferencesModal, setShowPreferencesModal] = useState(false);
+    const [showHistoryModal, setShowHistoryModal] = useState(false);
+    const [sessionHistory, setSessionHistory] = useState<SessionHistoryItem[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: string } | null>(null);
 
     // Temp settings for modal
     const [tempConfig, setTempConfig] = useState<ScoringConfig>(scoringConfig);
 
-    // Ref for dropdown
+    // Ref for dropdown and save debounce
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const isInitialLoadRef = useRef(true);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -98,6 +115,82 @@ export default function TallyPage() {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    // Load data from database on mount
+    useEffect(() => {
+        const loadGameState = async () => {
+            try {
+                setIsLoading(true);
+                const response = await fetch('/api/tally/game');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data._id) {
+                        setParticipants(data.participants || {});
+                        setQuestionEntries(data.questionEntries || {});
+                        setQuestionAnswers(data.questionAnswers || {});
+                        setScoreHistory(data.scoreHistory || []);
+                        setQuestionNumber(data.questionNumber || 1);
+                        setTopicInput(data.topic || '');
+                        if (data.config) {
+                            setScoringConfig(prev => ({ ...prev, ...data.config }));
+                            setTempConfig(prev => ({ ...prev, ...data.config }));
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load game state:', error);
+            } finally {
+                setIsLoading(false);
+                isInitialLoadRef.current = false;
+            }
+        };
+        loadGameState();
+    }, []);
+
+    // Auto-save to database when state changes
+    const saveToDatabase = useCallback(async () => {
+        if (isInitialLoadRef.current) return;
+
+        try {
+            setIsSaving(true);
+            await fetch('/api/tally/game', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    config: scoringConfig,
+                    questionNumber,
+                    topic: topicInput,
+                    participants,
+                    questionEntries,
+                    questionAnswers,
+                    scoreHistory
+                })
+            });
+        } catch (error) {
+            console.error('Failed to save game state:', error);
+        } finally {
+            setIsSaving(false);
+        }
+    }, [scoringConfig, questionNumber, topicInput, participants, questionEntries, questionAnswers, scoreHistory]);
+
+    // Debounced save effect
+    useEffect(() => {
+        if (isInitialLoadRef.current) return;
+
+        if (saveTimeoutRef.current) {
+            clearTimeout(saveTimeoutRef.current);
+        }
+
+        saveTimeoutRef.current = setTimeout(() => {
+            saveToDatabase();
+        }, 1000); // Save after 1 second of inactivity
+
+        return () => {
+            if (saveTimeoutRef.current) {
+                clearTimeout(saveTimeoutRef.current);
+            }
+        };
+    }, [participants, questionEntries, questionAnswers, scoreHistory, questionNumber, topicInput, saveToDatabase]);
 
     // Load settings from localStorage
     useEffect(() => {
@@ -447,17 +540,48 @@ ${formatText}`;
         showToast('Settings saved successfully!', 'success');
     };
 
+    // Load session history
+    const loadSessionHistory = async () => {
+        try {
+            const response = await fetch('/api/tally/history');
+            if (response.ok) {
+                const data = await response.json();
+                setSessionHistory(data);
+            }
+        } catch (error) {
+            console.error('Failed to load session history:', error);
+            showToast('Failed to load session history', 'danger');
+        }
+    };
+
+    // Open session history modal
+    const openSessionHistory = () => {
+        setShowSettingsDropdown(false);
+        loadSessionHistory();
+        setShowHistoryModal(true);
+    };
+
     // End session
-    const endSession = () => {
-        if (confirm('Are you sure you want to end the session? This will clear all data.')) {
-            setParticipants({});
-            setQuestionEntries({});
-            setQuestionAnswers({});
-            setScoreHistory([]);
-            setQuestionNumber(1);
-            setTopicInput('');
-            setAnswerInput('');
-            showToast('Session ended. All data cleared.', 'info');
+    const endSession = async () => {
+        if (confirm('Are you sure you want to end the session? This will save the session to history and start a new one.')) {
+            try {
+                // End current session in database
+                await fetch('/api/tally/game', { method: 'DELETE' });
+
+                // Reset local state
+                setParticipants({});
+                setQuestionEntries({});
+                setQuestionAnswers({});
+                setScoreHistory([]);
+                setQuestionNumber(1);
+                setTopicInput('');
+                setAnswerInput('');
+
+                showToast('Session ended and saved to history.', 'success');
+            } catch (error) {
+                console.error('Failed to end session:', error);
+                showToast('Failed to end session', 'danger');
+            }
         }
     };
 
@@ -496,7 +620,7 @@ ${formatText}`;
                                 <Sliders size={16} />
                                 <span>Preferences</span>
                             </button>
-                            <button onClick={() => { showToast('Session history feature coming soon!', 'info'); setShowSettingsDropdown(false); }}>
+                            <button onClick={openSessionHistory}>
                                 <History size={16} />
                                 <span>Session History</span>
                             </button>
@@ -873,6 +997,79 @@ ${formatText}`;
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Session History Modal */}
+            {showHistoryModal && (
+                <div className="modal-overlay" onClick={() => setShowHistoryModal(false)}>
+                    <div className="history-modal" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <History size={24} />
+                            <h2>Session History</h2>
+                            <button className="close-btn" onClick={() => setShowHistoryModal(false)}>
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            {sessionHistory.length === 0 ? (
+                                <div className="empty-history">
+                                    <History size={48} />
+                                    <p>No previous sessions found</p>
+                                </div>
+                            ) : (
+                                <div className="history-list">
+                                    {sessionHistory.map((session) => (
+                                        <div key={session._id} className="history-item">
+                                            <div className="history-item-header">
+                                                <h3>{session.topic || 'Quiz Session'}</h3>
+                                                <span className="history-date">
+                                                    {new Date(session.endedAt).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                            <div className="history-item-stats">
+                                                <div className="stat">
+                                                    <Users size={14} />
+                                                    <span>{session.participantCount} players</span>
+                                                </div>
+                                                <div className="stat">
+                                                    <Info size={14} />
+                                                    <span>{session.totalQuestions} questions</span>
+                                                </div>
+                                                <div className="stat winner">
+                                                    <Trophy size={14} />
+                                                    <span>{session.winner} ({session.winnerScore} pts)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn btn-secondary" onClick={() => setShowHistoryModal(false)}>
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Loading Overlay */}
+            {isLoading && (
+                <div className="loading-overlay">
+                    <div className="loading-spinner">
+                        <Loader2 size={48} className="spin" />
+                        <p>Loading session...</p>
+                    </div>
+                </div>
+            )}
+
+            {/* Saving Indicator */}
+            {isSaving && (
+                <div className="saving-indicator">
+                    <Loader2 size={16} className="spin" />
+                    <span>Saving...</span>
                 </div>
             )}
         </div>

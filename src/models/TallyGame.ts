@@ -1,6 +1,9 @@
 import mongoose, { Schema, model, models } from 'mongoose';
 
 const TallyGameSchema = new Schema({
+    title: { type: String, default: 'Quiz Session' },
+    topic: { type: String, default: '' },
+    createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
     config: {
         firstQuestion: {
             autoPoints: { type: Boolean, default: true },
@@ -16,7 +19,7 @@ const TallyGameSchema = new Schema({
             autoPoints: { type: Boolean, default: false },
             pointValue: { type: Number, default: 4 }
         },
-        totalQuestions: { type: Number, default: 10 },
+        totalQuestions: { type: Number, default: 20 },
         formats: {
             nextFormat: { type: String, default: "♪⁠┌⁠|⁠∵⁠|⁠┘⁠♪ＮＥＸＴ└⁠|⁠∵⁠|⁠┐⁠♪" },
             endFormat: { type: String, default: "♪⁠┌⁠|⁠∵⁠|⁠┘⁠♪ＥＮＤ└⁠|⁠∵⁠|⁠┐⁠♪" }
@@ -26,11 +29,11 @@ const TallyGameSchema = new Schema({
     participants: {
         type: Map, of: new Schema({
             scores: [Number],
-            total: Number
+            total: { type: Number, default: 0 }
         }, { _id: false })
     },
-    questionEntries: { type: Map, of: [String] }, // Key is question number string
-    questionAnswers: { type: Map, of: String },   // Key is question number string
+    questionEntries: { type: Map, of: [String] },
+    questionAnswers: { type: Map, of: String },
     scoreHistory: [{
         name: String,
         points: Number,
@@ -38,7 +41,8 @@ const TallyGameSchema = new Schema({
         questionNumber: Number,
         position: Number
     }],
-    isActive: { type: Boolean, default: true }
+    isActive: { type: Boolean, default: true },
+    endedAt: { type: Date, default: null }
 }, { timestamps: true });
 
 const TallyGame = models.TallyGame || model('TallyGame', TallyGameSchema);

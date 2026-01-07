@@ -1,48 +1,86 @@
 import { NextRequest, NextResponse } from 'next/server';
+import connectDB from '@/lib/db';
+import TallyGame from '@/models/TallyGame';
 
-// In-memory storage for demo purposes
-// In production, you'd use a database
-let gameState = {
-    config: {
-        firstQuestion: { autoPoints: true, pointValue: 4 },
-        middleQuestions: { firstPlace: 4, secondPlace: 2, thirdPlace: 2, otherPlace: 1 },
-        lastQuestion: { autoPoints: false, pointValue: 4 },
-        totalQuestions: 10,
-        formats: { 
-            nextFormat: "♪⁠┌⁠|⁠∵⁠|⁠┘⁠♪ＮＥＸＴ└⁠|⁠∵⁠|⁠┐⁠♪", 
-            endFormat: "♪⁠┌⁠|⁠∵⁠|⁠┘⁠♪ＥＮＤ└⁠|⁠∵⁠|⁠┐⁠♪" 
-        }
-    },
-    questionNumber: 1,
-    participants: {},
-    questionEntries: {},
-    questionTopics: {},
-    questionAnswers: {},
-    scoreHistory: []
-};
-
+// GET - Fetch or create active session
 export async function GET() {
     try {
-        return NextResponse.json(gameState);
+        await connectDB();
+
+        // Find active game session
+        let game = await TallyGame.findOne({ isActive: true }).sort({ updatedAt: -1 });
+
+        if (!game) {
+            // Create new session if none exists
+            game = await TallyGame.create({
+                isActive: true,
+                participants: new Map(),
+                questionEntries: new Map(),
+                questionAnswers: new Map(),
+                scoreHistory: []
+            });
+        }
+
+        // Convert Mongoose Maps to plain objects for JSON response
+        const gameObj = game.toObject();
+        gameObj.participants = game.participants ? Object.fromEntries(game.participants) : {};
+        gameObj.questionEntries = game.questionEntries ? Object.fromEntries(game.questionEntries) : {};
+        gameObj.questionAnswers = game.questionAnswers ? Object.fromEntries(game.questionAnswers) : {};
+
+        return NextResponse.json(gameObj);
     } catch (error) {
         console.error('Error fetching game state:', error);
         return NextResponse.json({ error: 'Failed to fetch game state' }, { status: 500 });
     }
 }
 
+// POST - Update current session
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const data = await request.json();
-        
-        // Update the game state
-        gameState = {
-            ...gameState,
-            ...data
-        };
-        
-        return NextResponse.json({ success: true });
+
+        // Find active game or create new one
+        let game = await TallyGame.findOne({ isActive: true }).sort({ updatedAt: -1 });
+
+        if (!game) {
+            game = new TallyGame({ isActive: true });
+        }
+
+        // Update fields
+        if (data.config) game.config = data.config;
+        if (data.questionNumber !== undefined) game.questionNumber = data.questionNumber;
+        if (data.topic !== undefined) game.topic = data.topic;
+        if (data.participants) game.participants = new Map(Object.entries(data.participants));
+        if (data.questionEntries) game.questionEntries = new Map(Object.entries(data.questionEntries));
+        if (data.questionAnswers) game.questionAnswers = new Map(Object.entries(data.questionAnswers));
+        if (data.scoreHistory) game.scoreHistory = data.scoreHistory;
+
+        await game.save();
+
+        return NextResponse.json({ success: true, id: game._id });
     } catch (error) {
         console.error('Error saving game state:', error);
         return NextResponse.json({ error: 'Failed to save game state' }, { status: 500 });
+    }
+}
+
+// DELETE - End current session
+export async function DELETE() {
+    try {
+        await connectDB();
+
+        const game = await TallyGame.findOne({ isActive: true }).sort({ updatedAt: -1 });
+
+        if (game) {
+            game.isActive = false;
+            game.endedAt = new Date();
+            await game.save();
+        }
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('Error ending session:', error);
+        return NextResponse.json({ error: 'Failed to end session' }, { status: 500 });
     }
 }
