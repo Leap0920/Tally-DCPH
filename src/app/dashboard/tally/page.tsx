@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { 
-    Settings, Award, Users, Trophy, ChevronLeft, ChevronRight, 
-    Plus, Copy, Trash2, Undo2, User, Hash, Calculator, 
+import {
+    Settings, Award, Users, Trophy, ChevronLeft, ChevronRight,
+    Plus, Copy, Trash2, Undo2, User, Hash, Calculator,
     X, Save, Eye, Info, ListOrdered, Palette
 } from 'lucide-react';
 import './tally.css';
@@ -189,14 +189,14 @@ export default function TallyPage() {
         setParticipants(prev => {
             const participant = prev[name];
             const newScores = [...participant.scores];
-            
+
             while (newScores.length < questionNumber) {
                 newScores.push(0);
             }
-            
+
             const previousQuestionScore = newScores[questionNumber - 1] || 0;
             newScores[questionNumber - 1] = points;
-            
+
             return {
                 ...prev,
                 [name]: {
@@ -214,11 +214,11 @@ export default function TallyPage() {
         const isFirstQuestion = questionNumber === 1;
         const isLastQuestion = scoringConfig.totalQuestions > 0 && questionNumber === scoringConfig.totalQuestions;
 
-        if ((isFirstQuestion && scoringConfig.firstQuestion.autoPoints) || 
+        if ((isFirstQuestion && scoringConfig.firstQuestion.autoPoints) ||
             (isLastQuestion && scoringConfig.lastQuestion.autoPoints)) {
-            
+
             const currentEntries = questionEntries[questionNumber] || [];
-            
+
             Object.keys(participants).forEach(name => {
                 if (!currentEntries.includes(name)) {
                     addToRound(name);
@@ -266,7 +266,7 @@ export default function TallyPage() {
     // Undo last action
     const undoDelete = () => {
         const historyForQuestion = scoreHistory.filter(h => h.questionNumber === questionNumber);
-        
+
         if (historyForQuestion.length === 0) {
             showToast('No score changes to undo for this question', 'warning');
             return;
@@ -277,7 +277,7 @@ export default function TallyPage() {
         // Remove from score history
         setScoreHistory(prev => {
             const newHistory = [...prev];
-            const index = newHistory.findLastIndex(h => 
+            const index = newHistory.findLastIndex(h =>
                 h.questionNumber === questionNumber && h.name === lastAction.name
             );
             if (index > -1) newHistory.splice(index, 1);
@@ -333,8 +333,8 @@ export default function TallyPage() {
         if (isLastQuestion) {
             const sortedParticipants = Object.entries(participants)
                 .sort((a, b) => b[1].total - a[1].total);
-            
-            totalScoresSection = `\n\nFinal Scores:\n${sortedParticipants.map(([name, data], index) => 
+
+            totalScoresSection = `\n\nFinal Scores:\n${sortedParticipants.map(([name, data], index) =>
                 `${index + 1}. ${name}: ${data.total} points`
             ).join('\n')}`;
         }
@@ -465,9 +465,9 @@ ${formatText}`;
                 <div className="control-inputs">
                     <div className="input-group">
                         <label>Topic</label>
-                        <input 
-                            type="text" 
-                            value={topicInput} 
+                        <input
+                            type="text"
+                            value={topicInput}
                             onChange={e => setTopicInput(e.target.value)}
                             placeholder="Enter topic"
                             className="tally-input"
@@ -475,9 +475,9 @@ ${formatText}`;
                     </div>
                     <div className="input-group">
                         <label>Answer</label>
-                        <input 
-                            type="text" 
-                            value={answerInput} 
+                        <input
+                            type="text"
+                            value={answerInput}
                             onChange={e => setAnswerInput(e.target.value)}
                             placeholder="Enter answer"
                             className="tally-input"
@@ -486,9 +486,9 @@ ${formatText}`;
                     <div className="input-group">
                         <label>Add Participant</label>
                         <div className="input-with-button">
-                            <input 
-                                type="text" 
-                                value={participantInput} 
+                            <input
+                                type="text"
+                                value={participantInput}
                                 onChange={e => setParticipantInput(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && addParticipant()}
                                 placeholder="Enter name"
@@ -580,7 +580,7 @@ ${formatText}`;
                                             ...Object.keys(questionEntries).map(Number)
                                         );
                                         const scoreBreakdown = [];
-                                        
+
                                         for (let i = 1; i <= maxQuestions; i++) {
                                             const score = data.scores[i - 1];
                                             if (i === questionNumber) {
@@ -633,7 +633,7 @@ ${formatText}`;
                                 </div>
                                 <div className="settings-card-body">
                                     <label className="checkbox-label">
-                                        <input 
+                                        <input
                                             type="checkbox"
                                             checked={tempConfig.firstQuestion.autoPoints}
                                             onChange={e => setTempConfig(prev => ({
@@ -645,7 +645,7 @@ ${formatText}`;
                                     </label>
                                     <div className="input-row">
                                         <label>Points Value (Modified Mode)</label>
-                                        <input 
+                                        <input
                                             type="number"
                                             value={tempConfig.firstQuestion.pointValue}
                                             onChange={e => setTempConfig(prev => ({
@@ -674,7 +674,7 @@ ${formatText}`;
                                     <div className="points-grid">
                                         <div className="input-row">
                                             <label>1st Place</label>
-                                            <input 
+                                            <input
                                                 type="number"
                                                 value={tempConfig.middleQuestions.firstPlace}
                                                 onChange={e => setTempConfig(prev => ({
@@ -688,7 +688,7 @@ ${formatText}`;
                                         </div>
                                         <div className="input-row">
                                             <label>2nd Place</label>
-                                            <input 
+                                            <input
                                                 type="number"
                                                 value={tempConfig.middleQuestions.secondPlace}
                                                 onChange={e => setTempConfig(prev => ({
@@ -702,7 +702,7 @@ ${formatText}`;
                                         </div>
                                         <div className="input-row">
                                             <label>3rd Place</label>
-                                            <input 
+                                            <input
                                                 type="number"
                                                 value={tempConfig.middleQuestions.thirdPlace}
                                                 onChange={e => setTempConfig(prev => ({
@@ -716,7 +716,7 @@ ${formatText}`;
                                         </div>
                                         <div className="input-row">
                                             <label>Others</label>
-                                            <input 
+                                            <input
                                                 type="number"
                                                 value={tempConfig.middleQuestions.otherPlace}
                                                 onChange={e => setTempConfig(prev => ({
@@ -740,7 +740,7 @@ ${formatText}`;
                                 </div>
                                 <div className="settings-card-body">
                                     <label className="checkbox-label">
-                                        <input 
+                                        <input
                                             type="checkbox"
                                             checked={tempConfig.lastQuestion.autoPoints}
                                             onChange={e => setTempConfig(prev => ({
@@ -752,7 +752,7 @@ ${formatText}`;
                                     </label>
                                     <div className="input-row">
                                         <label>Points Value (Modified Mode)</label>
-                                        <input 
+                                        <input
                                             type="number"
                                             value={tempConfig.lastQuestion.pointValue}
                                             onChange={e => setTempConfig(prev => ({
@@ -776,7 +776,7 @@ ${formatText}`;
                                 <div className="settings-card-body">
                                     <div className="input-row">
                                         <label>Total Number of Questions</label>
-                                        <input 
+                                        <input
                                             type="number"
                                             value={tempConfig.totalQuestions}
                                             onChange={e => setTempConfig(prev => ({
@@ -801,7 +801,7 @@ ${formatText}`;
                                 <div className="settings-card-body">
                                     <div className="input-row full">
                                         <label>Next Question Format</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             value={tempConfig.formats.nextFormat}
                                             onChange={e => setTempConfig(prev => ({
@@ -813,7 +813,7 @@ ${formatText}`;
                                     </div>
                                     <div className="input-row full">
                                         <label>End Quiz Format</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             value={tempConfig.formats.endFormat}
                                             onChange={e => setTempConfig(prev => ({
@@ -836,7 +836,7 @@ ${formatText}`;
                                     <div className="preview-content">
                                         <p>
                                             <strong>Question 1:</strong>{' '}
-                                            {tempConfig.firstQuestion.autoPoints 
+                                            {tempConfig.firstQuestion.autoPoints
                                                 ? `Modified Mode: ${tempConfig.firstQuestion.pointValue} points (all participants)`
                                                 : 'Original Mode: 4-2-2-1 distribution'}
                                         </p>
@@ -846,7 +846,7 @@ ${formatText}`;
                                         </p>
                                         <p>
                                             <strong>Question {tempConfig.totalQuestions}:</strong>{' '}
-                                            {tempConfig.lastQuestion.autoPoints 
+                                            {tempConfig.lastQuestion.autoPoints
                                                 ? `Modified Mode: ${tempConfig.lastQuestion.pointValue} points (all participants)`
                                                 : 'Original Mode: 4-2-2-1 distribution'}
                                         </p>
